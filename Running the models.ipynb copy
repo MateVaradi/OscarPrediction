@@ -1,0 +1,618 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Imports"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "/Applications/anaconda/lib/python2.7/site-packages/sklearn/cross_validation.py:44: DeprecationWarning: This module was deprecated in version 0.18 in favor of the model_selection module into which all the refactored classes and functions are moved. Also note that the interface of the new CV iterators are different from that of this module. This module will be removed in 0.20.\n",
+      "  \"This module will be removed in 0.20.\", DeprecationWarning)\n",
+      "/Applications/anaconda/lib/python2.7/site-packages/sklearn/grid_search.py:43: DeprecationWarning: This module was deprecated in version 0.18 in favor of the model_selection module into which all the refactored classes and functions are moved. This module will be removed in 0.20.\n",
+      "  DeprecationWarning)\n"
+     ]
+    }
+   ],
+   "source": [
+    "import pandas as pd\n",
+    "import numpy as np\n",
+    "import matplotlib.pyplot as plt\n",
+    "import seaborn as sns\n",
+    "%matplotlib inline\n",
+    "from sklearn.model_selection import train_test_split\n",
+    "from sklearn.tree import DecisionTreeClassifier\n",
+    "from sklearn.linear_model import LogisticRegression\n",
+    "from sklearn.linear_model import LogisticRegressionCV\n",
+    "from sklearn.svm import SVC\n",
+    "from sklearn.grid_search import GridSearchCV\n",
+    "from sklearn import cross_validation\n",
+    "from sklearn.metrics import classification_report, confusion_matrix\n",
+    "from sklearn.ensemble import RandomForestClassifier"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Preparations"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 12,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [],
+   "source": [
+    "#Change path for future use!!! -> new season data update\n",
+    "#Load in updated datafile until (n-1)th season\n",
+    "acting=pd.read_pickle('/Users/matevaradi/Documents/BCE/szakdoga/acting_dataframe.pkl')\n",
+    "picture=pd.read_pickle('/Users/matevaradi/Documents/BCE/szakdoga/picture_dataframe.pkl')\n",
+    "director=pd.read_pickle('/Users/matevaradi/Documents/BCE/szakdoga/director_dataframe.pkl')\n",
+    "#Data for 2019 to separate Dataframe:\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [],
+   "source": [
+    "supporting_acting_predictors=['imdb_score','rt_audience_score', 'rt_critic_score','total_oscar_noms', 'Q1_release','Q2_release', 'Q3_release', 'Q4_release', 'best_film_nom',\n",
+    " 'SAG_nom_1','SAG_nom_2', 'SAG_win_1','SAG_win_2', 'BAFTA_nom','critics_choice_nom_1', 'critics_choice_nom_2','SAG_cast_win_1','SAG_cast_win_2','SAG_cast_nom_1','SAG_cast_nom_2',\n",
+    "'BAFTA_win','critics_choice_win_1', 'critics_choice_win_2','GG_supporting_nom','GG_supporting_win','previous_oscar_noms', 'previous_oscar_wins',\n",
+    " 'previous_nominee','previous_winner',  '<25','25-35', '35-45','45-55','55-65','65-75','75<',\n",
+    "'action','biography', 'crime', 'comedy', 'drama', 'horror', 'fantasy', 'sci-fi','mystery', 'music', 'romance', 'history', 'war',\n",
+    " 'thriller','adventure','family','sport','western','G','PG', 'PG-13', 'R']\n",
+    "\n",
+    "acting_lead_predictors=['imdb_score', 'rt_audience_score', 'rt_critic_score','total_oscar_noms', 'Q1_release', 'Q2_release', 'Q3_release', 'Q4_release',\n",
+    " 'best_film_nom', 'SAG_nom_1','SAG_nom_2', 'SAG_win_1','SAG_win_2', 'BAFTA_nom', 'critics_choice_nom_1', 'critics_choice_nom_2',\n",
+    " 'SAG_cast_win_1','SAG_cast_win_2','SAG_cast_nom_1','SAG_cast_nom_2',\n",
+    " 'BAFTA_win', 'critics_choice_win_1', 'critics_choice_win_2', 'GG_comedy_lead_nom', 'GG_drama_lead_nom', 'GG_comedy_lead_win', 'GG_drama_lead_win', 'previous_oscar_noms', 'previous_oscar_wins',\n",
+    " 'previous_nominee','previous_winner',   '<25','25-35', '35-45','45-55','55-65','65-75','75<', 'action', 'biography', 'crime', 'comedy', 'drama',\n",
+    "'horror', 'fantasy', 'sci-fi', 'mystery', 'music', 'romance', 'history', 'war', 'thriller', 'adventure', 'family', 'sport', 'western', 'G', 'PG',\n",
+    " 'PG-13','R']\n",
+    "\n",
+    "picture_predictors=['imdb_score', 'rt_audience_score', 'rt_critic_score','total_oscar_noms',\n",
+    "'Q1_release', 'Q2_release', 'Q3_release', 'Q4_release',\n",
+    " 'best_dir_nom', 'PGA_nom_1','PGA_nom_2', 'SAG_nom_1', 'SAG_nom_2', 'DGA_nom', 'BAFTA_nom', 'critics_choice_nom_1', 'critics_choice_nom_2', 'PGA_win_1', 'PGA_win_2', 'SAG_win_1', 'SAG_win_2', 'DGA_win', 'BAFTA_win',\n",
+    " 'critics_choice_win_1','critics_choice_win_2', 'GG_comedy_nom', 'GG_drama_nom', 'GG_comedy_win', 'GG_drama_win',\n",
+    " 'action', 'biography',\n",
+    " 'crime', 'comedy', 'drama', 'horror', 'fantasy', 'sci-fi', 'mystery', 'music', 'romance', 'history', 'war', 'thriller',\n",
+    " 'adventure', 'family', 'sport', 'western',\n",
+    " 'G', 'PG', 'PG-13', 'R']\n",
+    "\n",
+    "director_predictors=['imdb_score', 'rt_audience_score', 'rt_critic_score','total_oscar_noms','Q1_release', 'Q2_release', 'Q3_release', 'Q4_release', 'best_film_nom', 'DGA_nom', 'BAFTA_nom',\n",
+    " 'critics_choice_nom_1', 'critics_choice_nom_2', 'DGA_win', 'BAFTA_win', 'critics_choice_win_1', 'critics_choice_win_2','gg_win','gg_nom',\n",
+    "'director_previous_oscar_nom', 'director_previous_oscar_win',  'action', 'biography', 'crime', 'comedy', 'drama', 'horror', 'fantasy',\n",
+    " 'sci-fi', 'mystery', 'music', 'romance', 'history', 'war', 'thriller', 'adventure', 'family', 'sport', 'western', 'G', 'PG',\n",
+    " 'PG-13','R']"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 14,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "#picture\n",
+    "X_p = picture[picture_predictors]\n",
+    "y_p = picture['winner']\n",
+    "#director\n",
+    "X_d = director[director_predictors]\n",
+    "y_d = director['winner']\n",
+    "#lead acting\n",
+    "X_l = acting[acting.category.isin(lead)][acting_lead_predictors]\n",
+    "y_l = acting[acting.category.isin(lead)]['winner']\n",
+    "#supporting acting\n",
+    "X_s = acting[acting.category.isin(supporting)][supporting_acting_predictors]\n",
+    "y_s = acting[acting.category.isin(supporting)]['winner']"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 58,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "#Category lists for indexing:\n",
+    "supporting=['Supporting Actor','Supporting Actress']\n",
+    "lead=['Actor','Actress']\n",
+    "directing=['Director']\n",
+    "bestpicture=['Picture']"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Train & predict"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "#### Logistic Regression"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 78,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [],
+   "source": [
+    "def whowillwin(model,X,y,data,category):\n",
+    "#Makes prediction for the films stored in data. data has to be a dataframe of the right format\n",
+    "#category can be \"supporting\",\"lead\",\"directing\" or \"bestpicture\"\n",
+    "    model.fit(X,y)\n",
+    "    cat_df=data[data.category.isin(category)] \n",
+    "    probs=model.predict_proba(X)[:,1]\n",
+    "    cat_df=cat_df.assign(probs=probs)\n",
+    "    y_class=[]\n",
+    "    for year in cat_df['ceremony year'].unique():\n",
+    "        for cat in cat_df['category'].unique():\n",
+    "            maxprob=max(cat_df[(cat_df['ceremony year']==year)&(cat_df['category']==cat)]['probs'])\n",
+    "            szelet=(cat_df[(cat_df['ceremony year']==year)&(cat_df['category']==cat)]['probs']==maxprob).astype(int).values\n",
+    "            y_class=np.concatenate((y_class,szelet))\n",
+    "\n",
+    "    cat_df=cat_df.assign(classification=y_class.astype(int))\n",
+    "    \n",
+    "    return cat_df[cat_df['ceremony year']==2018][['category','film','name','ceremony year','probs','classification']]\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 81,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>category</th>\n",
+       "      <th>film</th>\n",
+       "      <th>name</th>\n",
+       "      <th>ceremony year</th>\n",
+       "      <th>probs</th>\n",
+       "      <th>classification</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>1139</th>\n",
+       "      <td>Supporting Actor</td>\n",
+       "      <td>Three Billboards Outside Ebbing, Missouri</td>\n",
+       "      <td>Sam Rockwell</td>\n",
+       "      <td>2018.0</td>\n",
+       "      <td>0.885240</td>\n",
+       "      <td>1.0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1141</th>\n",
+       "      <td>Supporting Actress</td>\n",
+       "      <td>I, Tonya</td>\n",
+       "      <td>Allison Janney</td>\n",
+       "      <td>2018.0</td>\n",
+       "      <td>0.978191</td>\n",
+       "      <td>1.0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1128</th>\n",
+       "      <td>Actor</td>\n",
+       "      <td>Darkest Hour</td>\n",
+       "      <td>Gary Oldman</td>\n",
+       "      <td>2018.0</td>\n",
+       "      <td>0.406164</td>\n",
+       "      <td>1.0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1131</th>\n",
+       "      <td>Actress</td>\n",
+       "      <td>Three Billboards Outside Ebbing, Missouri</td>\n",
+       "      <td>Frances McDormand</td>\n",
+       "      <td>2018.0</td>\n",
+       "      <td>0.838301</td>\n",
+       "      <td>1.0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>288</th>\n",
+       "      <td>Director</td>\n",
+       "      <td>The Shape of Water</td>\n",
+       "      <td>Guillermo del Toro</td>\n",
+       "      <td>2018.0</td>\n",
+       "      <td>0.947269</td>\n",
+       "      <td>1.0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>323</th>\n",
+       "      <td>Picture</td>\n",
+       "      <td>The Shape of Water</td>\n",
+       "      <td>The Shape of Water</td>\n",
+       "      <td>2018.0</td>\n",
+       "      <td>0.497369</td>\n",
+       "      <td>1.0</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "                category                                       film  \\\n",
+       "1139    Supporting Actor  Three Billboards Outside Ebbing, Missouri   \n",
+       "1141  Supporting Actress                                   I, Tonya   \n",
+       "1128               Actor                               Darkest Hour   \n",
+       "1131             Actress  Three Billboards Outside Ebbing, Missouri   \n",
+       "288             Director                         The Shape of Water   \n",
+       "323              Picture                         The Shape of Water   \n",
+       "\n",
+       "                    name  ceremony year     probs  classification  \n",
+       "1139        Sam Rockwell         2018.0  0.885240             1.0  \n",
+       "1141      Allison Janney         2018.0  0.978191             1.0  \n",
+       "1128         Gary Oldman         2018.0  0.406164             1.0  \n",
+       "1131   Frances McDormand         2018.0  0.838301             1.0  \n",
+       "288   Guillermo del Toro         2018.0  0.947269             1.0  \n",
+       "323   The Shape of Water         2018.0  0.497369             1.0  "
+      ]
+     },
+     "execution_count": 81,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "logCV=LogisticRegressionCV()\n",
+    "winners_LR  = pd.DataFrame(columns = ['category','film','name','ceremony year','probs','classification'])\n",
+    "preds_LR_s=whowillwin(logCV,X_s,y_s,acting,supporting)\n",
+    "preds_LR_l=whowillwin(logCV,X_l,y_l,acting,lead)\n",
+    "preds_LR_d=whowillwin(logCV,X_d,y_d,director,directing)\n",
+    "preds_LR_p=whowillwin(logCV,X_p,y_p,picture,bestpicture)\n",
+    "\n",
+    "for cat in [preds_LR_s,preds_LR_l,preds_LR_d,preds_LR_p]:\n",
+    "    winners_LR=pd.concat([winners_LR,cat[cat.classification==1]])\n",
+    "winners_LR\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "#### Random Forest"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 79,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>category</th>\n",
+       "      <th>film</th>\n",
+       "      <th>name</th>\n",
+       "      <th>ceremony year</th>\n",
+       "      <th>probs</th>\n",
+       "      <th>classification</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>1139</th>\n",
+       "      <td>Supporting Actor</td>\n",
+       "      <td>Three Billboards Outside Ebbing, Missouri</td>\n",
+       "      <td>Sam Rockwell</td>\n",
+       "      <td>2018.0</td>\n",
+       "      <td>0.388</td>\n",
+       "      <td>1.0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1141</th>\n",
+       "      <td>Supporting Actress</td>\n",
+       "      <td>I, Tonya</td>\n",
+       "      <td>Allison Janney</td>\n",
+       "      <td>2018.0</td>\n",
+       "      <td>0.296</td>\n",
+       "      <td>1.0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1128</th>\n",
+       "      <td>Actor</td>\n",
+       "      <td>Darkest Hour</td>\n",
+       "      <td>Gary Oldman</td>\n",
+       "      <td>2018.0</td>\n",
+       "      <td>0.260</td>\n",
+       "      <td>1.0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1131</th>\n",
+       "      <td>Actress</td>\n",
+       "      <td>Three Billboards Outside Ebbing, Missouri</td>\n",
+       "      <td>Frances McDormand</td>\n",
+       "      <td>2018.0</td>\n",
+       "      <td>0.304</td>\n",
+       "      <td>1.0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>288</th>\n",
+       "      <td>Director</td>\n",
+       "      <td>The Shape of Water</td>\n",
+       "      <td>Guillermo del Toro</td>\n",
+       "      <td>2018.0</td>\n",
+       "      <td>0.288</td>\n",
+       "      <td>1.0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>323</th>\n",
+       "      <td>Picture</td>\n",
+       "      <td>The Shape of Water</td>\n",
+       "      <td>The Shape of Water</td>\n",
+       "      <td>2018.0</td>\n",
+       "      <td>0.220</td>\n",
+       "      <td>1.0</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "                category                                       film  \\\n",
+       "1139    Supporting Actor  Three Billboards Outside Ebbing, Missouri   \n",
+       "1141  Supporting Actress                                   I, Tonya   \n",
+       "1128               Actor                               Darkest Hour   \n",
+       "1131             Actress  Three Billboards Outside Ebbing, Missouri   \n",
+       "288             Director                         The Shape of Water   \n",
+       "323              Picture                         The Shape of Water   \n",
+       "\n",
+       "                    name  ceremony year  probs  classification  \n",
+       "1139        Sam Rockwell         2018.0  0.388             1.0  \n",
+       "1141      Allison Janney         2018.0  0.296             1.0  \n",
+       "1128         Gary Oldman         2018.0  0.260             1.0  \n",
+       "1131   Frances McDormand         2018.0  0.304             1.0  \n",
+       "288   Guillermo del Toro         2018.0  0.288             1.0  \n",
+       "323   The Shape of Water         2018.0  0.220             1.0  "
+      ]
+     },
+     "execution_count": 79,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "rfc=RandomForestClassifier(n_estimators=250)\n",
+    "\n",
+    "winners_rfc  = pd.DataFrame(columns = ['category','film','name','ceremony year','probs','classification'])\n",
+    "preds_rfc_s=whowillwin(rfc,X_s,y_s,acting,supporting)\n",
+    "preds_rfc_l=whowillwin(rfc,X_l,y_l,acting,lead)\n",
+    "preds_rfc_d=whowillwin(rfc,X_d,y_d,director,directing)\n",
+    "preds_rfc_p=whowillwin(rfc,X_p,y_p,picture,bestpicture)\n",
+    "\n",
+    "for cat in [preds_rfc_s,preds_rfc_l,preds_rfc_d,preds_rfc_p]:\n",
+    "    winners_rfc=pd.concat([winners_rfc,cat[cat.classification==1]])\n",
+    "winners_rfc"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "#### Support Vector Machines"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 91,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "def whowillwin_SVM(X,y,data,category):\n",
+    "#Makes prediction for the films stored in data. data has to be a dataframe of the right format\n",
+    "#category can be \"supporting\",\"lead\",\"directing\" or \"bestpicture\"\n",
+    "    param_grid={'C':[0.1,1,10,100,100],'gamma':[1,0.1,0.01,0.001,0.0001]}\n",
+    "    grid=GridSearchCV(SVC(),param_grid,verbose=0)\n",
+    "    grid.fit(X,y) \n",
+    "    C=grid.best_params_.get('C')\n",
+    "    gamma=grid.best_params_.get('gamma')\n",
+    "    clf=SVC(probability=True,gamma=gamma,C=C)\n",
+    "    \n",
+    "    clf.fit(X,y)\n",
+    "    cat_df=data[data.category.isin(category)] \n",
+    "    probs=clf.predict_proba(X)[:,1]\n",
+    "    cat_df=cat_df.assign(probs=probs)\n",
+    "    y_class=[]\n",
+    "    for year in cat_df['ceremony year'].unique():\n",
+    "        for cat in cat_df['category'].unique():\n",
+    "            maxprob=max(cat_df[(cat_df['ceremony year']==year)&(cat_df['category']==cat)]['probs'])\n",
+    "            szelet=(cat_df[(cat_df['ceremony year']==year)&(cat_df['category']==cat)]['probs']==maxprob).astype(int).values\n",
+    "            y_class=np.concatenate((y_class,szelet))\n",
+    "\n",
+    "    cat_df=cat_df.assign(classification=y_class.astype(int))\n",
+    "    \n",
+    "    return cat_df[cat_df['ceremony year']==2018][['category','film','name','ceremony year','probs','classification']]\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 92,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>category</th>\n",
+       "      <th>film</th>\n",
+       "      <th>name</th>\n",
+       "      <th>ceremony year</th>\n",
+       "      <th>probs</th>\n",
+       "      <th>classification</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>1139</th>\n",
+       "      <td>Supporting Actor</td>\n",
+       "      <td>Three Billboards Outside Ebbing, Missouri</td>\n",
+       "      <td>Sam Rockwell</td>\n",
+       "      <td>2018.0</td>\n",
+       "      <td>0.803589</td>\n",
+       "      <td>1.0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1141</th>\n",
+       "      <td>Supporting Actress</td>\n",
+       "      <td>I, Tonya</td>\n",
+       "      <td>Allison Janney</td>\n",
+       "      <td>2018.0</td>\n",
+       "      <td>0.799587</td>\n",
+       "      <td>1.0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1128</th>\n",
+       "      <td>Actor</td>\n",
+       "      <td>Darkest Hour</td>\n",
+       "      <td>Gary Oldman</td>\n",
+       "      <td>2018.0</td>\n",
+       "      <td>0.476864</td>\n",
+       "      <td>1.0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1131</th>\n",
+       "      <td>Actress</td>\n",
+       "      <td>Three Billboards Outside Ebbing, Missouri</td>\n",
+       "      <td>Frances McDormand</td>\n",
+       "      <td>2018.0</td>\n",
+       "      <td>0.904626</td>\n",
+       "      <td>1.0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>288</th>\n",
+       "      <td>Director</td>\n",
+       "      <td>The Shape of Water</td>\n",
+       "      <td>Guillermo del Toro</td>\n",
+       "      <td>2018.0</td>\n",
+       "      <td>0.644525</td>\n",
+       "      <td>1.0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>323</th>\n",
+       "      <td>Picture</td>\n",
+       "      <td>The Shape of Water</td>\n",
+       "      <td>The Shape of Water</td>\n",
+       "      <td>2018.0</td>\n",
+       "      <td>0.193823</td>\n",
+       "      <td>1.0</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "                category                                       film  \\\n",
+       "1139    Supporting Actor  Three Billboards Outside Ebbing, Missouri   \n",
+       "1141  Supporting Actress                                   I, Tonya   \n",
+       "1128               Actor                               Darkest Hour   \n",
+       "1131             Actress  Three Billboards Outside Ebbing, Missouri   \n",
+       "288             Director                         The Shape of Water   \n",
+       "323              Picture                         The Shape of Water   \n",
+       "\n",
+       "                    name  ceremony year     probs  classification  \n",
+       "1139        Sam Rockwell         2018.0  0.803589             1.0  \n",
+       "1141      Allison Janney         2018.0  0.799587             1.0  \n",
+       "1128         Gary Oldman         2018.0  0.476864             1.0  \n",
+       "1131   Frances McDormand         2018.0  0.904626             1.0  \n",
+       "288   Guillermo del Toro         2018.0  0.644525             1.0  \n",
+       "323   The Shape of Water         2018.0  0.193823             1.0  "
+      ]
+     },
+     "execution_count": 92,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "winners_SVM  = pd.DataFrame(columns = ['category','film','name','ceremony year','probs','classification'])\n",
+    "preds_SVM_s=whowillwin_SVM(X_s,y_s,acting,supporting)\n",
+    "preds_SVM_l=whowillwin_SVM(X_l,y_l,acting,lead)\n",
+    "preds_SVM_d=whowillwin_SVM(X_d,y_d,director,directing)\n",
+    "preds_SVM_p=whowillwin_SVM(X_p,y_p,picture,bestpicture)\n",
+    "\n",
+    "for cat in [preds_SVM_s,preds_SVM_l,preds_SVM_d,preds_SVM_p]:\n",
+    "    winners_SVM=pd.concat([winners_SVM,cat[cat.classification==1]])\n",
+    "winners_SVM"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 2",
+   "language": "python",
+   "name": "python2"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 2
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython2",
+   "version": "2.7.13"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}
