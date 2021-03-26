@@ -117,6 +117,7 @@ prediction_df, winners = predict_winners('rf', '2020', new_season_nominees)
 
 # TODO
 #  - logit convergence
+#  - add awards to readme
 # TODO ?
 #  - RF categorical vars instead of dummies?
 #  - try 2 acting models instead of 4

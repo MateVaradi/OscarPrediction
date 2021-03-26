@@ -1,3 +1,7 @@
+"""
+Scrapes data from the internet for nominees of the new season
+"""
+
 # Imports
 from rotten_tomatoes_scraper.rt_scraper import MovieScraper
 from imdb import IMDb
@@ -199,24 +203,28 @@ def get_actor_data(actor_name):
     if found_name.lower() != actor_name.lower():
         print('Titles do not exactly match: ', actor_name, found_name)
     person = ia.get_person(person_ID)
-    birthyear = int(person.data['birth date'].split('-')[0])
-    age = datetime.today().year - birthyear
+    if 'birth date' in person.data.keys():
+        birthyear = int(person.data['birth date'].split('-')[0])
+        age = datetime.today().year - birthyear
+    else:
+        birthyear = np.nan
+        age = np.nan
     award_data = ia.get_person_awards(person_ID)['data']['awards']
     oscar_nominations = oscar_wins = 0
     for nom in award_data:
-        if (nom['award'] == 'Academy Awards, USA') & \
+        if (nom['award'] == 'Academy Awards, USA') and \
                 (nom['category'] in ['Best Performance by an Actress in a Leading Role',
                                      'Best Performance by an Actress in a Supporting Role',
                                      'Best Performance by an Actor in a Leading Role',
-                                     'Best Performance by an Actor in a Supporting Role']):
+                                     'Best Performance by an Actor in a Supporting Role',
+                                     'Best Actor in a Leading Role', 'Best Actor in a Supporting Role',
+                                     'Best Actress in a Leading Role', 'Best Actress in a Supporting Role']):
             oscar_nominations += 1
             if 'result' in nom.keys():
                 if nom['result'] == 'Winner':
                     oscar_wins += 1
-    oscar_nominee = (oscar_nominations > 0) * 1
-    oscar_winner = (oscar_wins > 0) * 1
 
-    return age, birthyear, oscar_nominations, oscar_nominee, oscar_wins, oscar_winner
+    return age, birthyear, oscar_nominations, oscar_wins
 
 
 def get_director_data(director_name):
@@ -230,21 +238,19 @@ def get_director_data(director_name):
     award_data = ia.get_person_awards(person_ID)['data']['awards']
     oscar_nominations = oscar_wins = 0
     for nom in award_data:
-        if (nom['award'] == 'Academy Awards, USA') & (nom['category'] in
-                                                      ['Best Director', 'Best Achievement in Directing']):
+        if (nom['award'] == 'Academy Awards, USA') and \
+                (nom['category'] in ['Best Director', 'Best Achievement in Directing']):
             oscar_nominations += 1
             if 'result' in nom.keys():
                 if nom['result'] == 'Winner':
                     oscar_wins += 1
-    oscar_nominee = (oscar_nominations > 0) * 1
-    oscar_winner = (oscar_wins > 0) * 1
 
-    return oscar_nominations, oscar_nominee, oscar_wins, oscar_winner
+    return oscar_nominations, oscar_wins
 
 
 def get_all_movie_data(titles):
     new_movie_data = {}
-    for movie_title in titles:
+    for i, movie_title in enumerate(titles):
         movie_title = str(movie_title)
         print(f'Getting data for {movie_title}')
         new_movie_data[movie_title] = {}
@@ -268,6 +274,10 @@ def get_all_movie_data(titles):
         new_movie_data[movie_title]['RT_critics'] = tmp[0]
         new_movie_data[movie_title]['RT_audience'] = tmp[1]
 
+        if i > 7:
+            i = 0
+            sleep(randint(8, 20))
+
     return new_movie_data
 
 
@@ -280,9 +290,7 @@ def get_all_actor_data(names):
         new_actor_data[name]['age'] = tmp[0]
         new_actor_data[name]['birthyear'] = tmp[1]
         new_actor_data[name]['oscar_nominations'] = tmp[2]
-        new_actor_data[name]['oscar_nominee'] = tmp[3]
-        new_actor_data[name]['oscar_wins'] = tmp[4]
-        new_actor_data[name]['oscar_winner'] = tmp[5]
+        new_actor_data[name]['oscar_wins'] = tmp[3]
 
     return new_actor_data
 
@@ -294,9 +302,7 @@ def get_all_director_data(names):
         new_director_data[name] = {}
         tmp = get_director_data(name)
         new_director_data[name]['oscar_nominations'] = tmp[0]
-        new_director_data[name]['oscar_nominee'] = tmp[1]
-        new_director_data[name]['oscar_wins'] = tmp[2]
-        new_director_data[name]['oscar_winner'] = tmp[3]
+        new_director_data[name]['oscar_wins'] = tmp[1]
 
     return new_director_data
 
@@ -308,7 +314,10 @@ def get_all_newseason_data(new_season):
     actors = df[df['Category'].apply(lambda x: ('actor' in x.lower()) or ('actress') in x.lower())]['Nominee'].unique()
     directors = df[df['Category'] == 'Director']['Nominee'].unique()
 
-    nominated_movies = get_all_movie_data(titles)
+    # Scrape movie data in chunks of 5
+    nominated_movies = dict()
+    for title_chunk in [titles[i:i + 5] for i in range(0, len(titles), 5)]:
+        nominated_movies.update(get_all_movie_data(title_chunk))
     nominated_actors = get_all_actor_data(actors)
     nominated_directors = get_all_director_data(directors)
 
@@ -424,23 +433,23 @@ def create_newseason_picture_dataframe(nominated_movies, new_season):
                  ) * 1 for movie in nominated_movies.keys()})
 
     # SAG
-    df['Nom_SAG_acting'] = df['Film'].map({movie: (('SAG' in nominated_movies[movie]['awards'].keys()) and
-                                                   ('Outstanding Performance by a Cast in a Motion Picture' in
-                                                    nominated_movies[movie]['awards']['SAG']['categories'])) * 1
-                                           for movie in nominated_movies.keys()})
+    df['Nom_SAG_bestcast'] = df['Film'].map({movie: (('SAG' in nominated_movies[movie]['awards'].keys()) and
+                                                     ('Outstanding Performance by a Cast in a Motion Picture' in
+                                                      nominated_movies[movie]['awards']['SAG']['categories'])) * 1
+                                             for movie in nominated_movies.keys()})
 
-    df['Nonom_SAG_acting'] = df['Nom_SAG_acting'].astype(bool).apply(lambda x: int(not x))
+    df['Nonom_SAG_bestcast'] = df['Nom_SAG_bestcast'].astype(bool).apply(lambda x: int(not x))
 
-    df['Win_SAG_acting'] = df['Film'].map({movie: (('SAG' in nominated_movies[movie]['awards'].keys()) and
-                                                   ('Outstanding Performance by a Cast in a Motion Picture' in
-                                                    nominated_movies[movie]['awards']['SAG']['categories']) and
-                                                   (nominated_movies[movie]['awards']['SAG']['results'][
-                                                        nominated_movies[movie]['awards']['SAG']['categories'].index(
-                                                            'Outstanding Performance by a Cast in a Motion Picture')]
-                                                    == 'Winner')) * 1
-                                           for movie in nominated_movies.keys()})
+    df['Win_SAG_bestcast'] = df['Film'].map({movie: (('SAG' in nominated_movies[movie]['awards'].keys()) and
+                                                     ('Outstanding Performance by a Cast in a Motion Picture' in
+                                                      nominated_movies[movie]['awards']['SAG']['categories']) and
+                                                     (nominated_movies[movie]['awards']['SAG']['results'][
+                                                          nominated_movies[movie]['awards']['SAG']['categories'].index(
+                                                              'Outstanding Performance by a Cast in a Motion Picture')]
+                                                      == 'Winner')) * 1
+                                             for movie in nominated_movies.keys()})
 
-    df['Nowin_SAG_acting'] = df['Win_SAG_acting'].astype(bool).apply(lambda x: int(not x))
+    df['Nowin_SAG_bestcast'] = df['Win_SAG_bestcast'].astype(bool).apply(lambda x: int(not x))
 
     # PGA
     df['Nom_PGA'] = df['Film'].map({movie: (('PGA' in nominated_movies[movie]['awards'].keys()) and
@@ -482,21 +491,389 @@ def create_newseason_picture_dataframe(nominated_movies, new_season):
 
     # Save
 
-    df.to_csv(f'data/TRY_oscardata_{new_season}_bestpicture.csv', index=False)
+    df.to_csv(f'data/AUTO_oscardata_{new_season}_bestpicture.csv', index=False)
 
 
 def create_newseason_acting_dataframe(nominated_movies, nominated_actors, new_season):
-    print('wow')
+    df = pd.read_excel(f'data/nominations {new_season}.xlsx')
+    df = df[df['Category'].apply(lambda x: ('actor' in x.lower()) or ('actress') in x.lower())]
+    df['Film'] = df['Film'].astype(str)
+
+    start_cols = df.columns
+    final_cols = pd.read_csv(f'data/oscardata_acting.csv').columns
+    for col in final_cols:
+        if col not in start_cols:
+            df[col] = np.nan
+
+    # Rating columns
+    df['Rating_IMDB'] = df['Film'].map({movie: nominated_movies[movie]['IMDB_rating']
+                                        for movie in nominated_movies.keys()})
+    df['Rating_rtcritic'] = df['Film'].map({movie: nominated_movies[movie]['RT_critics']
+                                            for movie in nominated_movies.keys()})
+    df['Rating_rtaudience'] = df['Film'].map({movie: nominated_movies[movie]['RT_audience']
+                                              for movie in nominated_movies.keys()})
+
+    # Oscar stat columns
+    df['Oscarstat_totalnoms'] = df['Film'].map({movie: len(nominated_movies[movie]['awards']['Oscar']['categories'])
+                                                for movie in nominated_movies.keys()})
+
+    df['Oscarstat_previousnominations_acting'] = df['Nominee'].map(
+        {actor: nominated_actors[actor]['oscar_nominations'] - 1
+         for actor in nominated_actors.keys()})
+
+    df['Oscarstat_previouswins_acting'] = df['Nominee'].map({actor: nominated_actors[actor]['oscar_wins']
+                                                             for actor in nominated_actors.keys()})
+
+    df['Oscarstat_previousnominee_acting'] = (df['Oscarstat_previousnominations_acting'] > 0) * 1
+
+    df['Oscarstat_previouswinner_acting'] = (df['Oscarstat_previouswins_acting'] > 0) * 1
+
+    # Genre columns
+    genre_cols = [col for col in final_cols if 'Genre' in col]
+    for genre in genre_cols:
+        df[genre] = df['Film'].map({movie: (genre.split('_')[1] in nominated_movies[movie]['genres']) * 1
+                                    for movie in nominated_movies.keys()})
+
+    # MPAA columns
+    MPAA_rating_types = [col for col in final_cols if ('MPAA' in col) and ('rating' not in col)]
+    df['MPAA_rating'] = df['Film'].map({movie: nominated_movies[movie]['MPAA'] for movie in nominated_movies.keys()})
+    df[MPAA_rating_types] = 0
+    for rating_type in MPAA_rating_types:
+        df.loc[df['MPAA_rating'] == rating_type.split('_')[1], rating_type] = 1
+
+    # Release columns
+    df['Release_date'] = df['Film'].map({movie: nominated_movies[movie]['release_date']
+                                         for movie in nominated_movies.keys()})
+    releaseQ_cols = [col for col in final_cols if 'Release_Q' in col]
+    for Q in releaseQ_cols:
+        Q_num = int(Q[-1])
+        df[Q] = df['Film'].map({movie: (nominated_movies[movie]['release_quarter'] == Q_num) * 1
+                                for movie in nominated_movies.keys()})
+
+    # Age and birthyear columns
+    df['Birthyear'] = df['Nominee'].map({actor: nominated_actors[actor]['birthyear']
+                                         for actor in nominated_actors.keys()})
+    df['Age'] = df['Nominee'].map({actor: nominated_actors[actor]['age']
+                                   for actor in nominated_actors.keys()})
+
+    age_cols = [col for col in final_cols if 'Age_[' in col]
+    for age_col in age_cols:
+        age_bucket_bounds = list(map(int, re.findall('\d+', age_col))) + [np.inf]
+        lb = age_bucket_bounds[0]
+        ub = age_bucket_bounds[1]
+        df[age_col] = df['Age'].apply(lambda x: (lb < x and x <= ub) * 1)
+
+    # Nom and Win columns
+
+    # Oscar
+    df['Nom_Oscar_bestfilm'] = df['Film'].map({movie: ('Best Motion Picture of the Year' in
+                                                       nominated_movies[movie]['awards']['Oscar']['categories']) * 1
+                                               for movie in nominated_movies.keys()})
+
+    oscar_acting_cats = ['Actor', 'Actress', 'Supporting Actor', 'Supporting Actress']
+
+    # BAFTA
+    BAFTA_acting_cats = ['Best Leading Actor', 'Best Leading Actress', 'Best Supporting Actor',
+                         'Best Supporting Actress']
+    for oscar_cat, bafta_cat in zip(oscar_acting_cats, BAFTA_acting_cats):
+        df.loc[df['Category'] == oscar_cat, 'Nom_BAFTA'] = \
+            df['Nominee'].map({actor: (('BAFTA' in nominated_movies[movie]['awards'].keys()) and
+                                       (bafta_cat in nominated_movies[movie]['awards']['BAFTA']['categories'])) * 1
+                               for movie, actor in df[df['Category'] == oscar_cat][['Film', 'Nominee']].values})
+
+    for oscar_cat, bafta_cat in zip(oscar_acting_cats, BAFTA_acting_cats):
+        df.loc[df['Category'] == oscar_cat, 'Win_BAFTA'] = \
+            df['Nominee'].map({actor: (('BAFTA' in nominated_movies[movie]['awards'].keys()) and
+                                       (bafta_cat in nominated_movies[movie]['awards']['BAFTA']['categories']) and
+                                       (nominated_movies[movie]['awards']['BAFTA']['results'][
+                                            nominated_movies[movie]['awards']['BAFTA']['categories'].index(bafta_cat)]
+                                        == 'Winner')) * 1
+                               for movie, actor in df[df['Category'] == oscar_cat][['Film', 'Nominee']].values})
+
+    # Golden Globe
+    for cat in ['Actress', 'Actor']:
+        df.loc[df['Category'] != cat, 'Nom_GoldenGlobe_drama-leadacting'] = 0
+        df.loc[df['Category'] == cat, 'Nom_GoldenGlobe_drama-leadacting'] = \
+            df.loc[df['Category'] == cat, 'Nominee'].map(
+                {actor: (('Golden Globe' in nominated_movies[movie]['awards'].keys()) and
+                         (f'Best Performance by an {cat} in a Motion Picture - Drama' in
+                          nominated_movies[movie]['awards']['Golden Globe']['categories']) and
+                         (actor in nominated_movies[movie]['awards']['Golden Globe']['to'][
+                             nominated_movies[movie]['awards']['Golden Globe']['categories'].index(
+                                 f'Best Performance by an {cat} in a Motion Picture - Drama')])) * 1
+                 for movie, actor in df[df['Category'] == cat][['Film', 'Nominee']].values})
+
+        df.loc[df['Category'] != cat, 'Win_GoldenGlobe_drama-leadacting'] = 0
+        df.loc[df['Category'] == cat, 'Win_GoldenGlobe_drama-leadacting'] = \
+            df.loc[df['Category'] == cat, 'Nominee'].map(
+                {actor: (('Golden Globe' in nominated_movies[movie]['awards'].keys()) and
+                         (f'Best Performance by an {cat} in a Motion Picture - Drama' in
+                          nominated_movies[movie]['awards']['Golden Globe']['categories']) and
+                         (actor in nominated_movies[movie]['awards']['Golden Globe']['to'][
+                             nominated_movies[movie]['awards']['Golden Globe']['categories'].index(
+                                 f'Best Performance by an {cat} in a Motion Picture - Drama')]) and
+                         (nominated_movies[movie]['awards']['Golden Globe']['results'][
+                              nominated_movies[movie]['awards']['Golden Globe']['categories'].index(
+                                  f'Best Performance by an {cat} in a Motion Picture - Drama')]
+                          == 'Winner')) * 1
+                 for movie, actor in df[df['Category'] == cat][['Film', 'Nominee']].values})
+
+        df.loc[df['Category'] != cat, 'Nom_GoldenGlobe_comedy-leadacting'] = 0
+        df.loc[df['Category'] == cat, 'Nom_GoldenGlobe_comedy-leadacting'] = \
+            df.loc[df['Category'] == cat, 'Nominee'].map(
+                {actor: (('Golden Globe' in nominated_movies[movie]['awards'].keys()) and
+                         (f'Best Performance by an {cat} in a Motion Picture - Musical or Comedy' in
+                          nominated_movies[movie]['awards']['Golden Globe']['categories']) and
+                         (actor in nominated_movies[movie]['awards']['Golden Globe']['to'][
+                             nominated_movies[movie]['awards']['Golden Globe']['categories'].index(
+                                 f'Best Performance by an {cat} in a Motion Picture - Musical or Comedy')])) * 1
+                 for movie, actor in df[df['Category'] == cat][['Film', 'Nominee']].values})
+
+        df.loc[df['Category'] != cat, 'Win_GoldenGlobe_comedy-leadacting'] = 0
+        df.loc[df['Category'] == cat, 'Win_GoldenGlobe_comedy-leadacting'] = \
+            df.loc[df['Category'] == cat, 'Nominee'].map(
+                {actor: (('Golden Globe' in nominated_movies[movie]['awards'].keys()) and
+                         (f'Best Performance by an {cat} in a Motion Picture - Musical or Comedy' in
+                          nominated_movies[movie]['awards']['Golden Globe']['categories']) and
+                         (actor in nominated_movies[movie]['awards']['Golden Globe']['to'][
+                             nominated_movies[movie]['awards']['Golden Globe']['categories'].index(
+                                 f'Best Performance by an {cat} in a Motion Picture - Musical or Comedy')]) and
+                         (nominated_movies[movie]['awards']['Golden Globe']['results'][
+                              nominated_movies[movie]['awards']['Golden Globe']['categories'].index(
+                                  f'Best Performance by an {cat} in a Motion Picture - Musical or Comedy')]
+                          == 'Winner')) * 1
+                 for movie, actor in df[df['Category'] == cat][['Film', 'Nominee']].values})
+
+        df.loc[df['Category'] != 'Supporting ' + cat, 'Nom_GoldenGlobe_supportingacting'] = 0
+        df.loc[df['Category'] == 'Supporting ' + cat, 'Nom_GoldenGlobe_supportingacting'] = \
+            df.loc[df['Category'] == cat, 'Nominee'].map(
+                {actor: (('Golden Globe' in nominated_movies[movie]['awards'].keys()) and
+                         (f'Best Performance by an {cat} in a Supporting Role in a Motion Picture' in
+                          nominated_movies[movie]['awards']['Golden Globe']['categories']) and
+                         (actor in
+                          [a[0] for a, c in zip(nominated_movies[movie]['awards']['Golden Globe']['to'],
+                                                nominated_movies[movie]['awards']['Golden Globe'][
+                                                    'categories'])
+                           if
+                           c == f'Best Performance by an {cat} in a Supporting Role in a Motion Picture']
+                          )) * 1
+                 for movie, actor in
+                 df[df['Category'] == 'Supporting ' + cat][['Film', 'Nominee']].values})
+
+        df.loc[df['Category'] != 'Supporting ' + cat, 'Win_GoldenGlobe_supportingacting'] = 0
+        df.loc[df['Category'] == 'Supporting ' + cat, 'Win_GoldenGlobe_supportingacting'] = \
+            df.loc[df['Category'] == cat, 'Nominee'].map(
+                {actor: (('Golden Globe' in nominated_movies[movie]['awards'].keys()) and
+                         (f'Best Performance by an {cat} in a Supporting Role in a Motion Picture' in
+                          nominated_movies[movie]['awards']['Golden Globe']['categories']) and
+                         (actor in
+                          [a[0] for a, c in zip(nominated_movies[movie]['awards']['Golden Globe']['to'],
+                                                nominated_movies[movie]['awards']['Golden Globe'][
+                                                    'categories']) if
+                           c == f'Best Performance by an {cat} in a Supporting Role in a Motion Picture']
+                          ) and ([r for a, c, r in
+                                  zip(nominated_movies[movie]['awards']['Golden Globe']['to'],
+                                      nominated_movies[movie]['awards']['Golden Globe']['categories'],
+                                      nominated_movies[movie]['awards']['Golden Globe']['results'])
+                                  if (
+                                          c == f'Best Performance by an {cat} in a Supporting Role in a Motion Picture')
+                                  and (a[0] == actor)][0] == 'Winner')) * 1
+                 for movie, actor in
+                 df[df['Category'] == 'Supporting ' + cat][['Film', 'Nominee']].values})
+
+    # SAG
+    SAG_acting_cats = ['Outstanding Performance by a Male Actor in a Leading Role',
+                       'Outstanding Performance by a Female Actor in a Leading Role',
+                       'Outstanding Performance by a Male Actor in a Supporting Role',
+                       'Outstanding Performance by a Female Actor in a Supporting Role']
+    for oscar_cat, SAG_cat in zip(oscar_acting_cats, SAG_acting_cats):
+        df.loc[df['Category'] == oscar_cat, 'Nom_SAG_acting'] = \
+            df['Nominee'].map({actor: (('SAG' in nominated_movies[movie]['awards'].keys()) and
+                                       (SAG_cat in nominated_movies[movie]['awards']['SAG'][
+                                           'categories'])) * 1
+                               for movie, actor in df[df['Category'] == oscar_cat][['Film', 'Nominee']].values})
+
+        df.loc[df['Category'] == oscar_cat, 'Win_SAG_acting'] = \
+            df['Nominee'].map({actor: (('SAG' in nominated_movies[movie]['awards'].keys()) and
+                                       (SAG_cat in nominated_movies[movie]['awards']['SAG'][
+                                           'categories']) and
+                                       (nominated_movies[movie]['awards']['SAG']['results'][
+                                            nominated_movies[movie]['awards']['SAG']['categories'].index(
+                                                SAG_cat)]
+                                        == 'Winner')) * 1
+                               for movie, actor in df[df['Category'] == oscar_cat][['Film', 'Nominee']].values})
+
+    df['Nom_SAG_bestcast'] = df['Film'].map({movie: (('SAG' in nominated_movies[movie]['awards'].keys()) and
+                                                     ('Outstanding Performance by a Cast in a Motion Picture' in
+                                                      nominated_movies[movie]['awards']['SAG']['categories'])) * 1
+                                             for movie in nominated_movies.keys()})
+
+    df['Win_SAG_bestcast'] = df['Film'].map({movie: (('SAG' in nominated_movies[movie]['awards'].keys()) and
+                                                     ('Outstanding Performance by a Cast in a Motion Picture' in
+                                                      nominated_movies[movie]['awards']['SAG']['categories']) and
+                                                     (nominated_movies[movie]['awards']['SAG']['results'][
+                                                          nominated_movies[movie]['awards']['SAG']['categories'].index(
+                                                              'Outstanding Performance by a Cast in a Motion Picture')]
+                                                      == 'Winner')) * 1
+                                             for movie in nominated_movies.keys()})
+
+    df['Nowin_SAG_acting'] = df['Win_SAG_acting'].astype(bool).apply(lambda x: int(not x))
+    df['Nonom_SAG_acting'] = df['Nom_SAG_acting'].astype(bool).apply(lambda x: int(not x))
+    df['Nonom_SAG_bestcast'] = df['Nom_SAG_bestcast'].astype(bool).apply(lambda x: int(not x))
+    df['Nowin_SAG_bestcast'] = df['Win_SAG_bestcast'].astype(bool).apply(lambda x: int(not x))
+
+    # Critics Choice
+    CC_acting_cats = ['Best Actor', 'Best Actress', 'Best Supporting Actor', 'Best Supporting Actress']
+    for oscar_cat, cc_cat in zip(oscar_acting_cats, CC_acting_cats):
+        df.loc[df['Category'] == oscar_cat, 'Nom_Criticschoice'] = \
+            df['Nominee'].map({actor: (('Critics Choice' in nominated_movies[movie]['awards'].keys()) and
+                                       (cc_cat in nominated_movies[movie]['awards']['Critics Choice'][
+                                           'categories'])) * 1
+                               for movie, actor in df[df['Category'] == oscar_cat][['Film', 'Nominee']].values})
+
+        df.loc[df['Category'] == oscar_cat, 'Win_Criticschoice'] = \
+            df['Nominee'].map({actor: (('Critics Choice' in nominated_movies[movie]['awards'].keys()) and
+                                       (cc_cat in nominated_movies[movie]['awards']['Critics Choice']['categories']) and
+                                       (nominated_movies[movie]['awards']['Critics Choice']['results'][
+                                            nominated_movies[movie]['awards']['Critics Choice']['categories'].index(
+                                                cc_cat)]
+                                        == 'Winner')) * 1
+                               for movie, actor in df[df['Category'] == oscar_cat][['Film', 'Nominee']].values})
+
+    df['Nowin_Criticschoice'] = df['Win_Criticschoice'].astype(bool).apply(lambda x: int(not x))
+    df['Nonom_Criticschoice'] = df['Nom_Criticschoice'].astype(bool).apply(lambda x: int(not x))
+
+    # Save
+
+    df.to_csv(f'data/AUTO_oscardata_{new_season}_acting.csv', index=False)
 
 
 def create_newseason_director_dataframe(nominated_movies, nominated_directors, new_season):
-    print('wow')
+    df = pd.read_excel(f'data/nominations {new_season}.xlsx')
+    df = df[df['Category'] == 'Director']
+    df['Film'] = df['Film'].astype(str)
+
+    start_cols = df.columns
+    final_cols = pd.read_csv(f'data/oscardata_bestdirector.csv').columns
+    for col in final_cols:
+        if col not in start_cols:
+            df[col] = np.nan
+
+    # Rating columns
+    df['Rating_IMDB'] = df['Film'].map({movie: nominated_movies[movie]['IMDB_rating']
+                                        for movie in nominated_movies.keys()})
+    df['Rating_rtcritic'] = df['Film'].map({movie: nominated_movies[movie]['RT_critics']
+                                            for movie in nominated_movies.keys()})
+    df['Rating_rtaudience'] = df['Film'].map({movie: nominated_movies[movie]['RT_audience']
+                                              for movie in nominated_movies.keys()})
+
+    # Oscar stat columns
+    df['Oscarstat_totalnoms'] = df['Film'].map({movie: len(nominated_movies[movie]['awards']['Oscar']['categories'])
+                                                for movie in nominated_movies.keys()})
+
+    df['Oscarstat_previousnominations_bestdirector'] = df['Nominee'].map(
+        {director: nominated_directors[director]['oscar_nominations'] - 1
+         for director in nominated_directors.keys()})
+
+    df['Oscarstat_previouswins_bestdirector'] = df['Nominee'].map(
+        {director: nominated_directors[director]['oscar_wins']
+         for director in nominated_directors.keys()})
+
+    # Genre columns
+    genre_cols = [col for col in final_cols if 'Genre' in col]
+    for genre in genre_cols:
+        df[genre] = df['Film'].map({movie: (genre.split('_')[1] in nominated_movies[movie]['genres']) * 1
+                                    for movie in nominated_movies.keys()})
+
+    # MPAA columns
+    MPAA_rating_types = [col for col in final_cols if ('MPAA' in col) and ('rating' not in col)]
+    df['MPAA_rating'] = df['Film'].map({movie: nominated_movies[movie]['MPAA'] for movie in nominated_movies.keys()})
+    df[MPAA_rating_types] = 0
+    for rating_type in MPAA_rating_types:
+        df.loc[df['MPAA_rating'] == rating_type.split('_')[1], rating_type] = 1
+
+    # Release columns
+    df['Release_date'] = df['Film'].map({movie: nominated_movies[movie]['release_date']
+                                         for movie in nominated_movies.keys()})
+    releaseQ_cols = [col for col in final_cols if 'Release_Q' in col]
+    for Q in releaseQ_cols:
+        Q_num = int(Q[-1])
+        df[Q] = df['Film'].map({movie: (nominated_movies[movie]['release_quarter'] == Q_num) * 1
+                                for movie in nominated_movies.keys()})
+
+    # Award columns
+
+    # Oscar
+    df['Nom_Oscar_bestfilm'] = df['Film'].map({movie: ('Best Motion Picture of the Year' in
+                                                       nominated_movies[movie]['awards']['Oscar']['categories']) * 1
+                                               for movie in nominated_movies.keys()})
+
+    # DGA
+    df['Nom_DGA'] = df['Film'].map({movie: ('DGA' in nominated_movies[movie]['awards'].keys()) * 1
+                                    for movie in nominated_movies.keys()})
+
+    df['Win_DGA'] = df['Film'].map({movie: (('DGA' in nominated_movies[movie]['awards'].keys()) and
+                                            (nominated_movies[movie]['awards']['DGA']['results'][0] == 'Winner')) * 1
+                                    for movie in nominated_movies.keys()})
+
+    # Golden Globe
+    df['Nom_GoldenGlobe_bestdirector'] = df['Film'].map(
+        {movie: (('Golden Globe' in nominated_movies[movie]['awards'].keys()) and
+                 ('Best Director - Motion Picture' in nominated_movies[movie]['awards']['Golden Globe'][
+                     'categories'])) * 1
+         for movie in nominated_movies.keys()})
+
+    df['Win_GoldenGlobe_bestdirector'] = df['Film'].map(
+        {movie: (('Golden Globe' in nominated_movies[movie]['awards'].keys()) and
+                 ('Best Director - Motion Picture' in nominated_movies[movie]['awards']['Golden Globe'][
+                     'categories'])
+                 and (nominated_movies[movie]['awards']['Golden Globe']['results'][
+                          nominated_movies[movie]['awards']['Golden Globe']['categories'].index(
+                              'Best Director - Motion Picture')] == 'Winner')) * 1
+         for movie in nominated_movies.keys()})
+
+    # BAFTA
+    df['Nom_BAFTA'] = df['Film'].map({movie: (('BAFTA' in nominated_movies[movie]['awards'].keys()) and
+                                              ('Best Director' in nominated_movies[movie]['awards']['BAFTA'][
+                                                  'categories'])) * 1
+                                      for movie in nominated_movies.keys()})
+
+    df['Win_BAFTA'] = df['Film'].map({movie: (('BAFTA' in nominated_movies[movie]['awards'].keys()) and
+                                              ('Best Director' in nominated_movies[movie]['awards']['BAFTA'][
+                                                  'categories'])
+                                              and (nominated_movies[movie]['awards']['BAFTA']['results'][
+                                                       nominated_movies[movie]['awards']['BAFTA']['categories'].index(
+                                                           'Best Director')] == 'Winner')) * 1
+                                      for movie in nominated_movies.keys()})
+
+    # Critics choice
+    df['Nom_Criticschoice'] = df['Film'].map({movie: (('Critics Choice' in nominated_movies[movie]['awards'].keys()) and
+                                                      ('Best Director' in
+                                                       nominated_movies[movie]['awards']['Critics Choice'][
+                                                           'categories'])) * 1
+                                              for movie in nominated_movies.keys()})
+    df['Nonom_Criticschoice'] = df['Nom_Criticschoice'].astype(bool).apply(lambda x: int(not x))
+
+    df['Win_Criticschoice'] = df['Film'].map({movie: (('Critics Choice' in nominated_movies[movie]['awards'].keys()) and
+                                                      ('Best Director' in
+                                                       nominated_movies[movie]['awards']['Critics Choice'][
+                                                           'categories']) and
+                                                      (nominated_movies[movie]['awards']['Critics Choice']['results'][
+                                                           nominated_movies[movie]['awards']['Critics Choice'][
+                                                               'categories'].index(
+                                                               'Best Director')]
+                                                       == 'Winner')) * 1 for movie in nominated_movies.keys()})
+    df['Nowin_Criticschoice'] = df['Win_Criticschoice'].astype(bool).apply(lambda x: int(not x))
+
+    # Save
+
+    df.to_csv(f'data/AUTO_oscardata_{new_season}_bestdirector.csv', index=False)
 
 
 """ Main run function """
 
 
-def run(new_season='2020'):
+def run(new_season='2021'):
     # Load new season nominations
     df = pd.read_excel(f'data/nominations {new_season}.xlsx')
     # Get (scrape) data
@@ -504,12 +881,9 @@ def run(new_season='2020'):
     # Create picture dataframe for new season
     create_newseason_picture_dataframe(nominated_movies, new_season=new_season)
     # Create acting dataframe for new season
-    # TODO     create acting dataframe
     create_newseason_acting_dataframe(nominated_movies, nominated_actors, new_season=new_season)
     # Create director dataframe for new season
-    # TODO      create director dataframe
     create_newseason_director_dataframe(nominated_movies, nominated_directors, new_season=new_season)
 
-# TODO   add awards to readme
-# TODO after done:
-#       - check against actual 2020 df
+
+run('2021')
