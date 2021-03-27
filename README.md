@@ -14,7 +14,7 @@ The variables used for prediction can be grouped into distinct categories:
 - Oscar statistics: Total number of nominations, Number of previous nominations and wins (for actors and directors)
 - Award data: the nominations and results of Oscar precursor award ceremonies. The following table gives a summary of these awards:
 
-|                                  | Oscar categories                                      |                                         |                                                       |                                                                                      |
+|                                  |                          Oscar categories                                                                                                                   |                                                                                      |
 |----------------------------------|-------------------------------------------------------|-----------------------------------------|-------------------------------------------------------|--------------------------------------------------------------------------------------|
 |                                  | Best Picture                                          | Best Director                           | Best Lead Acting                                      | Best Supporting Acting                                                               |
 | BAFTA                            |                                                       | Best Director                           |                                                       |                                                                                      |
