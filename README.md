@@ -1,4 +1,4 @@
-# OscarPrediction
+# Oscar prediction
 
 This is (part of) the Python code and data for my BA thesis, _Predicting the Oscars with machine learning_.
 
