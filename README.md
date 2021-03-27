@@ -14,19 +14,14 @@ The variables used for prediction can be grouped into distinct categories:
 - Oscar statistics: Total number of nominations, Number of previous nominations and wins (for actors and directors)
 - Award data: the nominations and results of Oscar precursor award ceremonies. The following table gives a summary of these awards:
 
-|                                  |                          Oscar categories                                                                                                                   |                                                                                      |
-|----------------------------------|-------------------------------------------------------|-----------------------------------------|-------------------------------------------------------|--------------------------------------------------------------------------------------|
-|                                  | Best Picture                                          | Best Director                           | Best Lead Acting                                      | Best Supporting Acting                                                               |
-| BAFTA                            |                                                       | Best Director                           |                                                       |                                                                                      |
-| Golden Globe                     |                                                       | Best Director                           | Best Performance in a Motion Picture – Drama          |                                                                                      |
-| Critics Choice Award             |                                                       | Best Director                           |                                                       |                                                                                      |
-| Screen Actors Guild Award        | Outstanding Performance by a Cast in a Motion Picture |                                         | Outstanding Performance by a Cast in a Motion Picture | Best Supporting Actor/Actress, Outstanding Performance by a Cast in a Motion Picture |
-| Directors Guild of America Award |                                                       | Outstanding Achievement in Feature Film |                                                       |                                                                                      |
-| Producers Guild of America Award | Best Theatrical Motion Picture                        |                                         |                                                       |                                                                                      |
-|                                  |                                                       |                                         |                                                       |                                                                                      |
-|                                  |                                                       |                                         |                                                       |                                                                                      |
-|                                  |                                                       |                                         |                                                       |                                                                                      |
-
+|                                  | Best Picture                                                         | Best Director                           | Best Lead Actor & Actress                                                                               | Best Supporting Actor & Actress                                                      |
+|----------------------------------|----------------------------------------------------------------------|-----------------------------------------|---------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------|
+| BAFTA                            | Best Picture                                                         | Best Director                           | Best Lead Actor/Actress                                                                                 | Best Supporting Actor/Actress                                                        |
+| Golden Globe                     | Best Motion Picture - Drama, Best Motion Picture - Musical or Comedy | Best Director                           | Best Performance in a Motion Picture – Drama,  Best Performance in a Motion Picture – Musical or Comedy | Best Supporting Actor/Actress                                                        |
+| Critics Choice Award             | Best Picture                                                         | Best Director                           | Best Lead Actor/Actress                                                                                 | Best Supporting Actor/Actress                                                        |
+| Screen Actors Guild Award        | Outstanding Performance by a Cast in a Motion Picture                |                                         | Outstanding Performance by a Cast in a Motion Picture                                                   | Best Supporting Actor/Actress, Outstanding Performance by a Cast in a Motion Picture |
+| Directors Guild of America Award |                                                                      | Outstanding Achievement in Feature Film |                                                                                                         |                                                                                      |
+| Producers Guild of America Award | Best Theatrical Motion Picture                                       |                                         |                                                                                                         |                                                                                      |
 ## Usage
 
 ### Prerequisites
@@ -39,7 +34,7 @@ The variables used for prediction can be grouped into distinct categories:
 ### Files in the directory
 
 data: Contains the data used for the project
-`example.ipynb`: Contains an example prediction run for the 2021 season
+`example.ipynb`: Contains an example run to create predictions for the 2021 season
 `new_season_data_scrape.py` Scrapes IMDB and Rotten Tomatoes to get data for the nominees of a new season
 `predictor_selection.csv` Is a reference table which can be used to select the variables to include in the models.
 `models.py` Contains all the functionality related to the machine learning models used in this project
