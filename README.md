@@ -26,19 +26,19 @@ The variables used for prediction can be grouped into distinct categories:
 
 ### Prerequisites
 
-- Standard data science packages (numpy, pandas, sklearn, etc)
-- Web scraping packages (bs4, requests)
+- Standard data science packages (`numpy`, `pandas`, `sklearn`, etc)
+- Web scraping packages (`bs4`, `requests`)
 - [imdb](https://imdbpy.github.io/)
 - [rotten_tomatoes_scraper](https://pypi.org/project/rotten-tomatoes-scraper/)
 
 ### Files in the directory
 
-data: Contains the data used for the project
-`example.ipynb`: Contains an example run to create predictions for the 2021 season
-`new_season_data_scrape.py` Scrapes IMDB and Rotten Tomatoes to get data for the nominees of a new season
-`predictor_selection.csv` Is a reference table which can be used to select the variables to include in the models.
-`models.py` Contains all the functionality related to the machine learning models used in this project
-`new_season_data_merge.py` Merges the _old_ dataset with the newly scraped data.
+- data: Contains the data used for the project
+- `example.ipynb`: Contains an example run to create predictions for the 2021 season
+- `new_season_data_scrape.py` Scrapes IMDB and Rotten Tomatoes to get data for the nominees of a new season
+- `predictor_selection.csv` Is a reference table which can be used to select the variables to include in the models.
+- `models.py` Contains all the functionality related to the machine learning models used in this project
+- `new_season_data_merge.py` Merges the _old_ dataset with the newly scraped data.
 
 ## References
 
