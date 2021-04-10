@@ -46,7 +46,7 @@ The variables used for prediction can be grouped into distinct categories:
 2. Run `get_predictions.py`
 3. Run `merge_new_season_data.py` to update your database with the actual winners after the Oscar ceremony.
 
-+ you can play around with  `model_development.py` if you want to improve the models, try different hyperparameters, predictor sets, etc. Examples are provided in the file
+'+ you can play around with  `model_development.py` if you want to improve the models, try different hyperparameters, predictor sets, etc. Examples are provided in the file
 
 ## References
 
