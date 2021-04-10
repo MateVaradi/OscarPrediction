@@ -34,11 +34,19 @@ The variables used for prediction can be grouped into distinct categories:
 ### Files in the directory
 
 - data: Contains the data used for the project
-- `example.ipynb`: Contains an example run to create predictions for the 2021 season
-- `new_season_data_scrape.py` Scrapes IMDB and Rotten Tomatoes to get data for the nominees of a new season
+- `scrape_new_season_data.py` Scrapes IMDB and Rotten Tomatoes to get data for the nominees of a new season
 - `predictor_selection.csv` Is a reference table which can be used to select the variables to include in the models.
-- `models.py` Contains all the functionality related to the machine learning models used in this project
-- `new_season_data_merge.py` Merges the _old_ dataset with the newly scraped data.
+- `get_predictions.py` Runs the machine learning models used to predict Oscar winners
+- `merge_new_season_data.py` Merges the _old_ dataset with the newly scraped data.
+- `model_development.py` Contains some of the functionality used to improve models, test different variable sets, etc.
+
+### How to use
+
+1. Run `scrape_new_season_data.py` to get data for the latest Oscar season - run this a few days before the Oscar ceremony that you want to predict
+2. Run `get_predictions.py`
+3. Run `merge_new_season_data.py` to update your database with the actual winners after the Oscar ceremony.
+
++ you can play around with  `model_development.py` if you want to improve the models, try different hyperparameters, predictor sets, etc. Examples are provided in the file
 
 ## References
 
