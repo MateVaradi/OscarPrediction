@@ -324,7 +324,7 @@ def get_all_newseason_data(new_season):
     return nominated_movies, nominated_actors, nominated_directors
 
 
-def create_newseason_picture_dataframe(nominated_movies, new_season):
+def create_newseason_picture_dataframe(nominated_movies, new_season, suffix=''):
     df = pd.read_excel(f'data/nominations {new_season}.xlsx')
     df = df[df['Category'] == 'Picture']
     df['Film'] = df['Film'].astype(str)
@@ -491,10 +491,10 @@ def create_newseason_picture_dataframe(nominated_movies, new_season):
 
     # Save
 
-    df.to_csv(f'data/AUTO_oscardata_{new_season}_bestpicture.csv', index=False)
+    df.to_csv(f'data/oscardata_{new_season}_bestpicture{suffix}.csv', index=False)
 
 
-def create_newseason_acting_dataframe(nominated_movies, nominated_actors, new_season):
+def create_newseason_acting_dataframe(nominated_movies, nominated_actors, new_season, suffix=''):
     df = pd.read_excel(f'data/nominations {new_season}.xlsx')
     df = df[df['Category'].apply(lambda x: ('actor' in x.lower()) or ('actress') in x.lower())]
     df['Film'] = df['Film'].astype(str)
@@ -745,10 +745,10 @@ def create_newseason_acting_dataframe(nominated_movies, nominated_actors, new_se
 
     # Save
 
-    df.to_csv(f'data/AUTO_oscardata_{new_season}_acting.csv', index=False)
+    df.to_csv(f'data/oscardata_{new_season}_acting{suffix}.csv', index=False)
 
 
-def create_newseason_director_dataframe(nominated_movies, nominated_directors, new_season):
+def create_newseason_director_dataframe(nominated_movies, nominated_directors, new_season, suffix=''):
     df = pd.read_excel(f'data/nominations {new_season}.xlsx')
     df = df[df['Category'] == 'Director']
     df['Film'] = df['Film'].astype(str)
@@ -867,7 +867,7 @@ def create_newseason_director_dataframe(nominated_movies, nominated_directors, n
 
     # Save
 
-    df.to_csv(f'data/AUTO_oscardata_{new_season}_bestdirector.csv', index=False)
+    df.to_csv(f'data/oscardata_{new_season}_bestdirector{suffix}.csv', index=False)
 
 
 """ Main run function """
@@ -875,15 +875,15 @@ def create_newseason_director_dataframe(nominated_movies, nominated_directors, n
 
 def run(new_season='2021'):
     # Load new season nominations
-    df = pd.read_excel(f'data/nominations {new_season}.xlsx')
+    df = pd.read_excel(f'data/nominations_{new_season}.xlsx')
     # Get (scrape) data
     nominated_movies, nominated_actors, nominated_directors = get_all_newseason_data(new_season=new_season)
     # Create picture dataframe for new season
-    create_newseason_picture_dataframe(nominated_movies, new_season=new_season)
+    create_newseason_picture_dataframe(nominated_movies, new_season=new_season, suffix='-auto')
     # Create acting dataframe for new season
-    create_newseason_acting_dataframe(nominated_movies, nominated_actors, new_season=new_season)
+    create_newseason_acting_dataframe(nominated_movies, nominated_actors, new_season=new_season, suffix='-auto')
     # Create director dataframe for new season
-    create_newseason_director_dataframe(nominated_movies, nominated_directors, new_season=new_season)
+    create_newseason_director_dataframe(nominated_movies, nominated_directors, new_season=new_season, suffix='-auto')
 
 
 run('2021')
