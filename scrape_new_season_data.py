@@ -308,7 +308,7 @@ def get_all_director_data(names):
 
 
 def get_all_newseason_data(new_season):
-    df = pd.read_excel(f'data/nominations {new_season}.xlsx')
+    df = pd.read_excel(f'data/nominations_{new_season}.xlsx')
 
     titles = df['Film'].unique()
     actors = df[df['Category'].apply(lambda x: ('actor' in x.lower()) or ('actress') in x.lower())]['Nominee'].unique()
@@ -325,7 +325,7 @@ def get_all_newseason_data(new_season):
 
 
 def create_newseason_picture_dataframe(nominated_movies, new_season, suffix=''):
-    df = pd.read_excel(f'data/nominations {new_season}.xlsx')
+    df = pd.read_excel(f'data/nominations_{new_season}.xlsx')
     df = df[df['Category'] == 'Picture']
     df['Film'] = df['Film'].astype(str)
 
@@ -495,7 +495,7 @@ def create_newseason_picture_dataframe(nominated_movies, new_season, suffix=''):
 
 
 def create_newseason_acting_dataframe(nominated_movies, nominated_actors, new_season, suffix=''):
-    df = pd.read_excel(f'data/nominations {new_season}.xlsx')
+    df = pd.read_excel(f'data/nominations_{new_season}.xlsx')
     df = df[df['Category'].apply(lambda x: ('actor' in x.lower()) or ('actress') in x.lower())]
     df['Film'] = df['Film'].astype(str)
 
@@ -749,7 +749,7 @@ def create_newseason_acting_dataframe(nominated_movies, nominated_actors, new_se
 
 
 def create_newseason_director_dataframe(nominated_movies, nominated_directors, new_season, suffix=''):
-    df = pd.read_excel(f'data/nominations {new_season}.xlsx')
+    df = pd.read_excel(f'data/nominations_{new_season}.xlsx')
     df = df[df['Category'] == 'Director']
     df['Film'] = df['Film'].astype(str)
 
