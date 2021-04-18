@@ -8,9 +8,9 @@ import matplotlib.ticker as mtick
 # Settings
 sns.set_style("white")
 
-def create_barcharts(new_season):
+def create_barcharts(new_season, model):
     # Read data
-    df = pd.read_csv(f'results/all_predictions_{new_season}.csv')
+    df = pd.read_csv(f'results/all_predictions_{model}_{new_season}.csv')
     # Normalize probabilities
     df['Norm_prob'] = df['Prob'] / df.Category.map(df.groupby('Category')['Prob'].sum().to_dict())
     # Format as percentage
@@ -37,7 +37,7 @@ def create_barcharts(new_season):
             ax.set_yticklabels(list(df_plot['Nominee'] + ' - ' +df_plot['Film']))
         plt.xlabel('')
         plt.tight_layout()
-        plt.savefig(f'results/predictions_barchart_{new_season}_{cat}.png')
+        plt.savefig(f'results/predictions_barchart_{model}_{new_season}_{cat}.png')
         plt.close('all')
 
-create_barcharts('2021')
+create_barcharts(new_season='2021', model='rf')

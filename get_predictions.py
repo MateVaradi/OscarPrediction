@@ -138,21 +138,22 @@ def predict_winners(model_type, new_season, new_season_df,
 
     return prediction_df, winners
 
+
 def run(new_season):
     """
     Create predictions for the new season
     """
-
-    new_season_nominees = pd.read_excel(f'data/nominations_{new_season}.xlsx')
-    prediction_df, winners = predict_winners('logit', '2020', new_season_nominees)
-
     # Save results
     save_loc = 'results/'
     if not os.path.exists(save_loc):
         os.mkdir(save_loc)
-    winners.to_csv(f'results/winner_predictions_{new_season}.csv', index=False)
-    prediction_df.to_csv(f'results/all_predictions_{new_season}.csv', index=False)
 
-run('2020')
+    for model in ['logit', 'rf']:
+        new_season_nominees = pd.read_excel(f'data/nominations_{new_season}.xlsx')
+        prediction_df, winners = predict_winners(model, new_season, new_season_nominees)
+
+        winners.to_csv(f'results/winner_predictions_{model}_{new_season}.csv', index=False)
+        prediction_df.to_csv(f'results/all_predictions_{model}_{new_season}.csv', index=False)
 
 
+run('2021')
