@@ -40,4 +40,4 @@ def create_barcharts(new_season):
         plt.savefig(f'results/predictions_barchart_{new_season}_{cat}.png')
         plt.close('all')
 
-create_barcharts('2020')
+create_barcharts('2021')
