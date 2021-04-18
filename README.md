@@ -42,7 +42,7 @@ The variables used for prediction can be grouped into distinct categories:
 
 ### How to use
 
-1. Run `scrape_new_season_data.py` to get data for the latest Oscar season - run this a few days before the Oscar ceremony that you want to predict
+1. Run `scrape_new_season_data.py` to get data for the latest Oscar season - run this a few days before the Oscar ceremony that you want to predict. Check and manually fill in any NaNs before running predictions.
 2. Run `get_predictions.py`
 3. Run `merge_new_season_data.py` to update your database with the actual winners after the Oscar ceremony.
 
