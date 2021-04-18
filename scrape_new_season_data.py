@@ -93,7 +93,10 @@ def get_IMDB_movie_data(movie_title):
     movie = ia.get_movie(movie_ID)
     rating = movie.data['rating']
     release_date = movie.data['original air date'].split(" (")[0]
-    release_quarter = quarter(release_date)
+    try:
+        release_quarter = quarter(release_date)
+    except:  # when release month not (yet) specified
+        release_quarter = 1
     genres = [genre.lower() for genre in movie.data['genres']]
     MPAA = [c.split(':')[1] for c in movie.data['certificates'] if (c.startswith('United States') or 'USA' in c)][0]
     awards = dict()
@@ -325,6 +328,8 @@ def get_all_newseason_data(new_season):
 
 
 def create_newseason_picture_dataframe(nominated_movies, new_season, suffix=''):
+    print(f'Creating {new_season} dataframe for Best Picture')
+
     df = pd.read_excel(f'data/nominations_{new_season}.xlsx')
     df = df[df['Category'] == 'Picture']
     df['Film'] = df['Film'].astype(str)
@@ -495,6 +500,8 @@ def create_newseason_picture_dataframe(nominated_movies, new_season, suffix=''):
 
 
 def create_newseason_acting_dataframe(nominated_movies, nominated_actors, new_season, suffix=''):
+    print(f'Creating {new_season} dataframe for acting')
+
     df = pd.read_excel(f'data/nominations_{new_season}.xlsx')
     df = df[df['Category'].apply(lambda x: ('actor' in x.lower()) or ('actress') in x.lower())]
     df['Film'] = df['Film'].astype(str)
@@ -550,11 +557,12 @@ def create_newseason_acting_dataframe(nominated_movies, nominated_actors, new_se
         df[Q] = df['Film'].map({movie: (nominated_movies[movie]['release_quarter'] == Q_num) * 1
                                 for movie in nominated_movies.keys()})
 
-    # Age and birthyear columns
+    # Age, birthyear and gender columns
     df['Birthyear'] = df['Nominee'].map({actor: nominated_actors[actor]['birthyear']
                                          for actor in nominated_actors.keys()})
     df['Age'] = df['Nominee'].map({actor: nominated_actors[actor]['age']
                                    for actor in nominated_actors.keys()})
+    df['Female'] = df['Category'].isin(['Actress', 'Supporting Actress']) * 1
 
     age_cols = [col for col in final_cols if 'Age_[' in col]
     for age_col in age_cols:
@@ -591,8 +599,13 @@ def create_newseason_acting_dataframe(nominated_movies, nominated_actors, new_se
                                for movie, actor in df[df['Category'] == oscar_cat][['Film', 'Nominee']].values})
 
     # Golden Globe
+    df.loc[~df['Category'].isin(['Actress', 'Actor']), 'Win_GoldenGlobe_comedy-leadacting'] = 0
+    df.loc[~df['Category'].isin(['Actress', 'Actor']), 'Nom_GoldenGlobe_drama-leadacting'] = 0
+    df.loc[~df['Category'].isin(['Actress', 'Actor']), 'Win_GoldenGlobe_drama-leadacting'] = 0
+    df.loc[~df['Category'].isin(['Actress', 'Actor']), 'Nom_GoldenGlobe_comedy-leadacting'] = 0
+    df.loc[~df['Category'].isin(['Supporting Actress', 'Supporting Actress']), 'Win_GoldenGlobe_supportingacting'] = 0
+    df.loc[~df['Category'].isin(['Supporting Actress', 'Supporting Actress']), 'Nom_GoldenGlobe_supportingacting'] = 0
     for cat in ['Actress', 'Actor']:
-        df.loc[df['Category'] != cat, 'Nom_GoldenGlobe_drama-leadacting'] = 0
         df.loc[df['Category'] == cat, 'Nom_GoldenGlobe_drama-leadacting'] = \
             df.loc[df['Category'] == cat, 'Nominee'].map(
                 {actor: (('Golden Globe' in nominated_movies[movie]['awards'].keys()) and
@@ -603,7 +616,6 @@ def create_newseason_acting_dataframe(nominated_movies, nominated_actors, new_se
                                  f'Best Performance by an {cat} in a Motion Picture - Drama')])) * 1
                  for movie, actor in df[df['Category'] == cat][['Film', 'Nominee']].values})
 
-        df.loc[df['Category'] != cat, 'Win_GoldenGlobe_drama-leadacting'] = 0
         df.loc[df['Category'] == cat, 'Win_GoldenGlobe_drama-leadacting'] = \
             df.loc[df['Category'] == cat, 'Nominee'].map(
                 {actor: (('Golden Globe' in nominated_movies[movie]['awards'].keys()) and
@@ -618,7 +630,6 @@ def create_newseason_acting_dataframe(nominated_movies, nominated_actors, new_se
                           == 'Winner')) * 1
                  for movie, actor in df[df['Category'] == cat][['Film', 'Nominee']].values})
 
-        df.loc[df['Category'] != cat, 'Nom_GoldenGlobe_comedy-leadacting'] = 0
         df.loc[df['Category'] == cat, 'Nom_GoldenGlobe_comedy-leadacting'] = \
             df.loc[df['Category'] == cat, 'Nominee'].map(
                 {actor: (('Golden Globe' in nominated_movies[movie]['awards'].keys()) and
@@ -629,7 +640,6 @@ def create_newseason_acting_dataframe(nominated_movies, nominated_actors, new_se
                                  f'Best Performance by an {cat} in a Motion Picture - Musical or Comedy')])) * 1
                  for movie, actor in df[df['Category'] == cat][['Film', 'Nominee']].values})
 
-        df.loc[df['Category'] != cat, 'Win_GoldenGlobe_comedy-leadacting'] = 0
         df.loc[df['Category'] == cat, 'Win_GoldenGlobe_comedy-leadacting'] = \
             df.loc[df['Category'] == cat, 'Nominee'].map(
                 {actor: (('Golden Globe' in nominated_movies[movie]['awards'].keys()) and
@@ -644,9 +654,8 @@ def create_newseason_acting_dataframe(nominated_movies, nominated_actors, new_se
                           == 'Winner')) * 1
                  for movie, actor in df[df['Category'] == cat][['Film', 'Nominee']].values})
 
-        df.loc[df['Category'] != 'Supporting ' + cat, 'Nom_GoldenGlobe_supportingacting'] = 0
         df.loc[df['Category'] == 'Supporting ' + cat, 'Nom_GoldenGlobe_supportingacting'] = \
-            df.loc[df['Category'] == cat, 'Nominee'].map(
+            df.loc[df['Category'] == 'Supporting ' + cat, 'Nominee'].map(
                 {actor: (('Golden Globe' in nominated_movies[movie]['awards'].keys()) and
                          (f'Best Performance by an {cat} in a Supporting Role in a Motion Picture' in
                           nominated_movies[movie]['awards']['Golden Globe']['categories']) and
@@ -660,9 +669,8 @@ def create_newseason_acting_dataframe(nominated_movies, nominated_actors, new_se
                  for movie, actor in
                  df[df['Category'] == 'Supporting ' + cat][['Film', 'Nominee']].values})
 
-        df.loc[df['Category'] != 'Supporting ' + cat, 'Win_GoldenGlobe_supportingacting'] = 0
         df.loc[df['Category'] == 'Supporting ' + cat, 'Win_GoldenGlobe_supportingacting'] = \
-            df.loc[df['Category'] == cat, 'Nominee'].map(
+            df.loc[df['Category'] == 'Supporting ' + cat, 'Nominee'].map(
                 {actor: (('Golden Globe' in nominated_movies[movie]['awards'].keys()) and
                          (f'Best Performance by an {cat} in a Supporting Role in a Motion Picture' in
                           nominated_movies[movie]['awards']['Golden Globe']['categories']) and
@@ -680,6 +688,7 @@ def create_newseason_acting_dataframe(nominated_movies, nominated_actors, new_se
                                   and (a[0] == actor)][0] == 'Winner')) * 1
                  for movie, actor in
                  df[df['Category'] == 'Supporting ' + cat][['Film', 'Nominee']].values})
+
 
     # SAG
     SAG_acting_cats = ['Outstanding Performance by a Male Actor in a Leading Role',
@@ -749,6 +758,8 @@ def create_newseason_acting_dataframe(nominated_movies, nominated_actors, new_se
 
 
 def create_newseason_director_dataframe(nominated_movies, nominated_directors, new_season, suffix=''):
+    print(f'Creating {new_season} dataframe for Best Director')
+
     df = pd.read_excel(f'data/nominations_{new_season}.xlsx')
     df = df[df['Category'] == 'Director']
     df['Film'] = df['Film'].astype(str)
