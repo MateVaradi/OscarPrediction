@@ -152,3 +152,7 @@ Thumbs.db
 
 
 # End of https://www.toptal.com/developers/gitignore/api/python
+Predicting the Oscars with machine learning - Máté Váradi - TDK.pdf
+results/*
+.DS_Store
+.DS_Store
