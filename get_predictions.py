@@ -161,6 +161,7 @@ def predict_winners(
         # Train model and obtain probabilities for new season
         model.fit(X, y)
         category_df = new_season_df[new_season_df["Category"].isin(oscar_cats)].copy()
+        category_df = category_df.sort_values("Category")
         probs = model.predict_proba(X_t)[:, 1]
         category_df["Prob"] = probs
 
