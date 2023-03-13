@@ -4,7 +4,7 @@ Scrapes data from the internet for nominees of the new season
 
 # Imports
 from rotten_tomatoes_scraper.rt_scraper import MovieScraper
-from imdb import IMDb
+from imdb import Cinemagoer
 import pandas as pd
 import numpy as np
 import re
@@ -36,6 +36,7 @@ def quarter(date):
 """ Main functions """
 
 
+# Old function
 def get_RT_ratings(movie_title):
     """
     Returns the Rotten Tomatoes critic score and audience score of a title
@@ -86,6 +87,27 @@ def get_RT_ratings(movie_title):
     return rt_critics_score, rt_audience_score
 
 
+def get_RT_ratings(movie_title):
+    """
+    Returns the Rotten Tomatoes critic score and audience score of a title
+    """
+
+    if movie_title == "Im Westen nichts Neues":
+        url = "all_quiet_on_the_western_front_2022"
+    elif movie_title == "Tár":
+        url = "tar_2022"
+    elif movie_title == "Living":
+        url = "living_2022"
+    else:
+        url = movie_title.replace(":", "").replace(" ", "_").lower()
+
+    movie_scraper = MovieScraper(movie_url="https://www.rottentomatoes.com/m/" + url)
+    movie_scraper.extract_metadata()
+    rt_critics_score = int(movie_scraper.metadata["Score_Rotten"])
+    rt_audience_score = int(movie_scraper.metadata["Score_Audience"])
+    return rt_critics_score, rt_audience_score
+
+
 def get_IMDB_movie_data(movie_title):
     """
     Returns the following information of a title:
@@ -96,7 +118,7 @@ def get_IMDB_movie_data(movie_title):
         awards
     """
     # Get movie data from IMDB API
-    ia = IMDb()
+    ia = Cinemagoer()
     res = ia._search_movie(movie_title, results=True)
     movie_ID = res[0][0]
     if res[0][1]["title"] != movie_title:
@@ -216,7 +238,7 @@ def get_IMDB_movie_data(movie_title):
 
 def get_actor_data(actor_name):
     # Get actor data from IMDB API
-    ia = IMDb()
+    ia = Cinemagoer()
     res = ia._search_person(actor_name, results=True)
     person_ID = res[0][0]
     found_name = " ".join(res[0][1]["name"].split(",")[::-1]).strip(" ")
@@ -255,7 +277,7 @@ def get_actor_data(actor_name):
 
 def get_director_data(director_name):
     # Get director data from IMDB API
-    ia = IMDb()
+    ia = Cinemagoer()
     res = ia._search_person(director_name, results=True)
     person_ID = res[0][0]
     found_name = " ".join(res[0][1]["name"].split(",")[::-1]).strip(" ")
@@ -1578,7 +1600,7 @@ def create_newseason_director_dataframe(
 """ Main run function """
 
 
-def run(new_season="2022"):
+def run(new_season="2023"):
     # Load new season nominations
     df = pd.read_excel(f"data/nominations_{new_season}.xlsx")
     # Get (scrape) data
@@ -1599,4 +1621,4 @@ def run(new_season="2022"):
     )
 
 
-run("2022")
+run("2023")

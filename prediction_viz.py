@@ -9,7 +9,10 @@ import matplotlib.ticker as mtick
 sns.set_style("white")
 
 
-def create_barcharts(new_season, model):
+def create_barcharts(new_season, model, dain_version=False):
+    main_color = "#f07f71" if not dain_version else "#EA9B2A"
+    sat = 0.75 if not dain_version else 1
+
     # Read data
     df = pd.read_csv(f"results/all_predictions_{model}_{new_season}.csv")
     # Normalize probabilities
@@ -28,14 +31,34 @@ def create_barcharts(new_season, model):
         fig, ax = plt.subplots(figsize=(8, 3))
         # Background (100%)
         sns.barplot(
-            data=df_plot, x="Hundred_percent", y="Nominee", orient="h", color="#d3d3d3"
+            data=df_plot,
+            x="Hundred_percent",
+            y="Nominee",
+            orient="h",
+            saturation=sat,
+            color="#d3d3d3",
         )
         # Plot probabilities
         sns.barplot(
-            data=df_plot, x="Norm_prob", y="Nominee", orient="h", color="#f07f71"
+            data=df_plot,
+            x="Norm_prob",
+            y="Nominee",
+            orient="h",
+            saturation=sat,
+            color=main_color,
         )
         # Aesthetics
         ax.xaxis.set_major_formatter(mtick.PercentFormatter())
+        if dain_version:
+            ax.spines["left"].set_color("#113341")
+            ax.spines["right"].set_color("#113341")
+            ax.spines["bottom"].set_color("#113341")
+            ax.spines["top"].set_color("#113341")
+            ax.yaxis.label.set_color("#113341")
+            ax.xaxis.label.set_color("#113341")
+            ax.tick_params(axis="x", colors="#113341")
+            ax.tick_params(axis="y", colors="#113341")
+
         plt.xlim((0, 100))
         plt.ylabel("")
         if cat == "Picture":
@@ -48,4 +71,4 @@ def create_barcharts(new_season, model):
         plt.close("all")
 
 
-create_barcharts(new_season="2022", model="rf")
+create_barcharts(new_season="2023", model="rf", dain_version=False)

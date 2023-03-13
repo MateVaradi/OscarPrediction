@@ -190,6 +190,7 @@ def run(new_season):
         os.mkdir(save_loc)
 
     for model in ["logit", "rf"]:
+        print(f"Training {model} model.")
         new_season_nominees = pd.read_excel(f"data/nominations_{new_season}.xlsx")
         prediction_df, winners = predict_winners(model, new_season, new_season_nominees)
 
@@ -201,4 +202,4 @@ def run(new_season):
         )
 
 
-run("2022")
+run("2023")
