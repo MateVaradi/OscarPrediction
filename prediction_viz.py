@@ -71,4 +71,4 @@ def create_barcharts(new_season, model, dain_version=False):
         plt.close("all")
 
 
-create_barcharts(new_season="2023", model="rf", dain_version=False)
+create_barcharts(new_season="2024", model="logit", dain_version=False)

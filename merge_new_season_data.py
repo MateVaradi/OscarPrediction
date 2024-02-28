@@ -50,4 +50,4 @@ def merge_new_into_old(
 
 # Step 1: Run this script
 
-merge_new_into_old("2022")
+merge_new_into_old("2024")
