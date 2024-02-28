@@ -3,13 +3,13 @@ Scrapes data from the internet for nominees of the new season
 """
 
 # Imports
-from rotten_tomatoes_scraper.rt_scraper import MovieScraper
 from imdb import Cinemagoer
 import pandas as pd
 import numpy as np
 import re
 from time import sleep
 from random import randint
+import rottentomatoes as rt
 from datetime import datetime
 
 # Settings
@@ -36,75 +36,28 @@ def quarter(date):
 """ Main functions """
 
 
-# Old function
-def get_RT_ratings(movie_title):
-    """
-    Returns the Rotten Tomatoes critic score and audience score of a title
-    """
-
-    # Extract URL
-    RT_search = MovieScraper()
-    search_res = RT_search.search(movie_title)
-
-    # Exact match
-    url_list = [
-        movie_dict["url"]
-        for movie_dict in search_res["movies"]
-        if movie_dict["name"].lower() == movie_title.lower()
-    ]
-    if len(url_list) == 1:
-        url = url_list[0]
-    # No exact match -  return the latest one
-    elif not url_list:
-        url_list = sorted(
-            [
-                (movie_dict["url"], movie_dict["year"])
-                for movie_dict in search_res["movies"]
-            ],
-            key=lambda x: x[1],
-            reverse=True,
-        )
-        url = url_list[0][0]
-        print(f"No exact match found. Going with {url}")
-    # More than one exact match - return the latest one
-    elif len(url_list) > 1:
-        url_list = sorted(
-            [
-                (movie_dict["url"], movie_dict["year"])
-                for movie_dict in search_res["movies"]
-                if movie_dict["name"].lower() == movie_title.lower()
-            ],
-            key=lambda x: x[1],
-            reverse=True,
-        )
-        url = url_list[0][0]
-        print(f"More than one exact match found. Going with {url}")
-
-    movie_scraper = MovieScraper(movie_url="https://www.rottentomatoes.com" + url)
-    movie_scraper.extract_metadata()
-    rt_critics_score = int(movie_scraper.metadata["Score_Rotten"])
-    rt_audience_score = int(movie_scraper.metadata["Score_Audience"])
-    return rt_critics_score, rt_audience_score
-
 
 def get_RT_ratings(movie_title):
     """
     Returns the Rotten Tomatoes critic score and audience score of a title
     """
 
+    # Manual fixes
     if movie_title == "Im Westen nichts Neues":
-        url = "all_quiet_on_the_western_front_2022"
-    elif movie_title == "Tár":
-        url = "tar_2022"
-    elif movie_title == "Living":
-        url = "living_2022"
+        movie_title_RT = "All Quiet on the Western Front"
     else:
-        url = movie_title.replace(":", "").replace(" ", "_").lower()
+        movie_title_RT = movie_title
 
-    movie_scraper = MovieScraper(movie_url="https://www.rottentomatoes.com/m/" + url)
-    movie_scraper.extract_metadata()
-    rt_critics_score = int(movie_scraper.metadata["Score_Rotten"])
-    rt_audience_score = int(movie_scraper.metadata["Score_Audience"])
+    try:
+        rt_critics_score = int(rt.tomatometer(movie_title_RT))
+    except:
+        print(f"RT critic score not found for: {movie_title}")
+
+    try:  
+        rt_audience_score = int(rt.audience_score(movie_title_RT))
+    except:
+        print(f"RT audience score not found for: {movie_title}")
+
     return rt_critics_score, rt_audience_score
 
 
@@ -137,7 +90,8 @@ def get_IMDB_movie_data(movie_title):
         if (c.startswith("United States") or "USA" in c)
     ][0]
     awards = dict()
-    award_data = ia.get_movie_awards(movie_ID)["data"]["awards"]
+    #award_data = ia.get_movie_awards(movie_ID)["data"]["awards"]
+    award_data = []
     for nom in award_data:
 
         if nom["award"] == "PGA Award":
@@ -251,8 +205,9 @@ def get_actor_data(actor_name):
     else:
         birthyear = np.nan
         age = np.nan
-    award_data = ia.get_person_awards(person_ID)["data"]["awards"]
+    # award_data = ia.get_person_awards(person_ID)["data"]["awards"]
     oscar_nominations = oscar_wins = 0
+    award_data = []
     for nom in award_data:
         if (nom["award"] == "Academy Awards, USA") and (
             nom["category"]
@@ -283,7 +238,8 @@ def get_director_data(director_name):
     found_name = " ".join(res[0][1]["name"].split(",")[::-1]).strip(" ")
     if found_name.lower() != director_name.lower():
         print("Titles do not exactly match: ", director_name, found_name)
-    award_data = ia.get_person_awards(person_ID)["data"]["awards"]
+    # award_data = ia.get_person_awards(person_ID)["data"]["awards"]
+    award_data = []
     oscar_nominations = oscar_wins = 0
     for nom in award_data:
         if (nom["award"] == "Academy Awards, USA") and (
@@ -314,11 +270,6 @@ def get_all_movie_data(titles):
         new_movie_data[movie_title]["awards"] = tmp[5]
         # Get data from RT
 
-        # sometimes the scrapers may fail and we need to do some hardcoded changes to make it work, for example
-        if movie_title == "Parasite":
-            movie_title_RT = "Parasite (Gisaengchung)"
-        else:
-            movie_title_RT = movie_title
 
         if movie_title == "Tick, Tick... Boom!":
             new_movie_data[movie_title]["RT_critics"] = 88
@@ -327,9 +278,9 @@ def get_all_movie_data(titles):
             new_movie_data[movie_title]["RT_critics"] = 55
             new_movie_data[movie_title]["RT_audience"] = 78
         else:
-            tmp = get_RT_ratings(movie_title_RT)
-            new_movie_data[movie_title]["RT_critics"] = tmp[0]
-            new_movie_data[movie_title]["RT_audience"] = tmp[1]
+            critics_score, audience_score = get_RT_ratings(movie_title)
+            new_movie_data[movie_title]["RT_critics"] = critics_score
+            new_movie_data[movie_title]["RT_audience"] = audience_score
 
         if i > 7:
             i = 0
@@ -419,12 +370,15 @@ def create_newseason_picture_dataframe(nominated_movies, new_season, suffix=""):
     )
 
     # Oscar stat columns
-    df["Oscarstat_totalnoms"] = df["Film"].map(
-        {
-            movie: len(nominated_movies[movie]["awards"]["Oscar"]["categories"])
-            for movie in nominated_movies.keys()
-        }
-    )
+    try:
+        df["Oscarstat_totalnoms"] = df["Film"].map(
+            {
+                movie: len(nominated_movies[movie]["awards"]["Oscar"]["categories"])
+                for movie in nominated_movies.keys()
+            }
+        )
+    except:
+        df["Oscarstat_totalnoms"] = np.nan
 
     # Genre columns
     genre_cols = [col for col in final_cols if "Genre" in col]
@@ -466,16 +420,19 @@ def create_newseason_picture_dataframe(nominated_movies, new_season, suffix=""):
 
     # Nom and Win columns
     # Oscar
-    df["Nom_Oscar_bestdirector"] = df["Film"].map(
-        {
-            movie: any(
-                dir_cat in nominated_movies[movie]["awards"]["Oscar"]["categories"]
-                for dir_cat in ["Best Director", "Best Achievement in Directing"]
-            )
-            * 1
-            for movie in nominated_movies.keys()
-        }
-    )
+    try:
+        df["Nom_Oscar_bestdirector"] = df["Film"].map(
+            {
+                movie: any(
+                    dir_cat in nominated_movies[movie]["awards"]["Oscar"]["categories"]
+                    for dir_cat in ["Best Director", "Best Achievement in Directing"]
+                )
+                * 1
+                for movie in nominated_movies.keys()
+            }
+        )
+    except:
+        df["Nom_Oscar_bestdirector"] = np.nan
 
     # DGA
     df["Nom_DGA"] = df["Film"].map(
@@ -785,26 +742,35 @@ def create_newseason_acting_dataframe(
     )
 
     # Oscar stat columns
-    df["Oscarstat_totalnoms"] = df["Film"].map(
-        {
-            movie: len(nominated_movies[movie]["awards"]["Oscar"]["categories"])
-            for movie in nominated_movies.keys()
-        }
-    )
+    try:
+        df["Oscarstat_totalnoms"] = df["Film"].map(
+            {
+                movie: len(nominated_movies[movie]["awards"]["Oscar"]["categories"])
+                for movie in nominated_movies.keys()
+            }
+        )
+    except:
+        df["Oscarstat_totalnoms"] = np.nan
 
-    df["Oscarstat_previousnominations_acting"] = df["Nominee"].map(
+    try:
+        df["Oscarstat_previousnominations_acting"] = df["Nominee"].map(
         {
             actor: nominated_actors[actor]["oscar_nominations"] - 1
             for actor in nominated_actors.keys()
         }
     )
+    except:
+        df["Oscarstat_previousnominations_acting"] = np.nan
 
-    df["Oscarstat_previouswins_acting"] = df["Nominee"].map(
-        {
-            actor: nominated_actors[actor]["oscar_wins"]
-            for actor in nominated_actors.keys()
-        }
-    )
+    try:
+        df["Oscarstat_previouswins_acting"] = df["Nominee"].map(
+            {
+                actor: nominated_actors[actor]["oscar_wins"]
+                for actor in nominated_actors.keys()
+            }
+        )
+    except:
+        df["Oscarstat_previouswins_acting"] = np.nan
 
     df["Oscarstat_previousnominee_acting"] = (
         df["Oscarstat_previousnominations_acting"] > 0
@@ -874,16 +840,19 @@ def create_newseason_acting_dataframe(
     # Nom and Win columns
 
     # Oscar
-    df["Nom_Oscar_bestfilm"] = df["Film"].map(
-        {
-            movie: (
-                "Best Motion Picture of the Year"
-                in nominated_movies[movie]["awards"]["Oscar"]["categories"]
-            )
-            * 1
-            for movie in nominated_movies.keys()
-        }
-    )
+    try:
+        df["Nom_Oscar_bestfilm"] = df["Film"].map(
+            {
+                movie: (
+                    "Best Motion Picture of the Year"
+                    in nominated_movies[movie]["awards"]["Oscar"]["categories"]
+                )
+                * 1
+                for movie in nominated_movies.keys()
+            }
+        )
+    except:
+        df["Nom_Oscar_bestfilm"] = np.nan
 
     oscar_acting_cats = ["Actor", "Actress", "Supporting Actor", "Supporting Actress"]
 
@@ -1383,12 +1352,15 @@ def create_newseason_director_dataframe(
     )
 
     # Oscar stat columns
-    df["Oscarstat_totalnoms"] = df["Film"].map(
+    try:
+        df["Oscarstat_totalnoms"] = df["Film"].map(
         {
             movie: len(nominated_movies[movie]["awards"]["Oscar"]["categories"])
             for movie in nominated_movies.keys()
         }
     )
+    except: 
+        df["Oscarstat_totalnoms"] = np.nan
 
     df["Oscarstat_previousnominations_bestdirector"] = df["Nominee"].map(
         {
@@ -1445,7 +1417,8 @@ def create_newseason_director_dataframe(
     # Award columns
 
     # Oscar
-    df["Nom_Oscar_bestfilm"] = df["Film"].map(
+    try:
+        df["Nom_Oscar_bestfilm"] = df["Film"].map(
         {
             movie: (
                 "Best Motion Picture of the Year"
@@ -1455,6 +1428,8 @@ def create_newseason_director_dataframe(
             for movie in nominated_movies.keys()
         }
     )
+    except:
+        df["Nom_Oscar_bestfilm"] = np.nan
 
     # DGA
     df["Nom_DGA"] = df["Film"].map(
@@ -1621,4 +1596,4 @@ def run(new_season="2023"):
     )
 
 
-run("2023")
+run("2024")

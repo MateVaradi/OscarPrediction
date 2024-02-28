@@ -166,11 +166,9 @@ def predict_winners(
         category_df["Prob"] = probs
 
         # Classify the film with the highest probability of winning as the winner
-        for oscar_cat in oscar_cats:
-            maxprob = max(category_df.loc[category_df["Category"] == oscar_cat, "Prob"])
-            category_df.loc[category_df["Category"] == oscar_cat, "Classification"] = (
-                category_df.loc[category_df["Category"] == oscar_cat, "Prob"] == maxprob
-            ) * 1
+        category_df["Classification"] = 0
+        win_idx = category_df.groupby("Category")["Prob"].idxmax()
+        category_df.loc[win_idx, "Classification"] = 1
 
         prediction_dfs.append(category_df[out_columns])
 
@@ -202,4 +200,4 @@ def run(new_season):
         )
 
 
-run("2023")
+run("2024")
