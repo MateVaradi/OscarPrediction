@@ -1,0 +1,14 @@
+TODO:
+- Refactoring:
+    - new season data processing module with nice exception handling
+        - replace `scrape_new_season_data`
+    - new season data processing script
+    - model development/experimentation and validation functions and notebooks
+        - add new training splits
+- packaging
+    - cleanup old functions
+    - dependency mgmt with Docker?
+- MLOps:
+    - deploy models
+    - new data model retraining script
+        - replace `merge_new_season_data`

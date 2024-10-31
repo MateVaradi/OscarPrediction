@@ -1,20 +1,20 @@
 # Imports
-import pandas as pd
-import numpy as np
-import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mtick
+import numpy as np
+import pandas as pd
+import seaborn as sns
 
-# Settings
-sns.set_style("white")
 
+def create_barcharts(results_dir, save_dir, dain_version=False):
+    # Settings
+    sns.set_style("white")
 
-def create_barcharts(new_season, model, dain_version=False):
     main_color = "#f07f71" if not dain_version else "#EA9B2A"
     sat = 0.75 if not dain_version else 1
 
     # Read data
-    df = pd.read_csv(f"results/all_predictions_{model}_{new_season}.csv")
+    df = pd.read_csv(results_dir)
     # Normalize probabilities
     df["Norm_prob"] = df["Prob"] / df.Category.map(
         df.groupby("Category")["Prob"].sum().to_dict()
@@ -61,14 +61,12 @@ def create_barcharts(new_season, model, dain_version=False):
 
         plt.xlim((0, 100))
         plt.ylabel("")
+        ax.set_yticks(ax.get_yticks())
         if cat == "Picture":
             ax.set_yticklabels(df_plot["Film"])
         else:
             ax.set_yticklabels(list(df_plot["Nominee"] + " - " + df_plot["Film"]))
         plt.xlabel("")
         plt.tight_layout()
-        plt.savefig(f"results/predictions_barchart_{model}_{new_season}_{cat}.png")
+        plt.savefig(f"{save_dir}_{cat}.png")
         plt.close("all")
-
-
-create_barcharts(new_season="2024", model="logit", dain_version=False)

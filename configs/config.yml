@@ -1,0 +1,20 @@
+category_map:
+  Picture:
+    - Picture
+  Director:
+    - Director
+  Lead Acting:
+    - Actor
+    - Actress
+  Supporting Acting:
+    - Supporting Actor
+    - Supporting Actress
+
+data_dirs:
+  Picture: data/oscardata_bestpicture.csv
+  Director: data/oscardata_bestdirector.csv
+  Supporting Acting: data/oscardata_acting.csv
+  Lead Acting: data/oscardata_acting.csv
+
+predictor_dir: configs/predictor_selection.xlsx
+predictor_set: model_1
