@@ -1,8 +1,12 @@
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegressionCV
-from sklearn.metrics import (classification_report, confusion_matrix,
-                             recall_score, roc_auc_score)
+from sklearn.metrics import (
+    classification_report,
+    confusion_matrix,
+    recall_score,
+    roc_auc_score,
+)
 from sklearn.model_selection import train_test_split
 
 

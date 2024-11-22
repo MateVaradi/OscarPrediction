@@ -1,0 +1,28 @@
+urls:
+  oscar: https://en.wikipedia.org/wiki/94th_Academy_Awards
+  sag: https://en.wikipedia.org/wiki/28th_Screen_Actors_Guild_Awards
+  dga: https://en.wikipedia.org/wiki/74th_Directors_Guild_of_America_Awards
+  pga: https://en.wikipedia.org/wiki/33th_Producers_Guild_of_America_Awards
+  cc: https://en.wikipedia.org/wiki/27th_Critics%27_Choice_Awards
+  bafta: https://en.wikipedia.org/wiki/75th_British_Academy_Film_Awards
+  gg: https://en.wikipedia.org/wiki/79th_Golden_Globe_Awards
+
+maps:
+  gg:
+    Best Drama: 0,0
+    Best Comedy: 0,1
+    Director: 16,0
+    Drama Actor: 7,0
+    Drama Actress: 7,1
+    Comedy Actor: 10,0
+    Comedy Actress: 10,1
+    Supporting Actor: 13,0
+    Supporting Actress: 13,1
+  sag:
+    Picture: 2,1
+    Actor: 0,0
+    Actress: 0,1
+    Supporting Actor: 1,0
+    Supporting Actress: 1,1
+  oscar:
+    total_noms: 2
