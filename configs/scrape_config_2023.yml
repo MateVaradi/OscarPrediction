@@ -1,0 +1,28 @@
+urls:
+  oscar: https://en.wikipedia.org/wiki/95th_Academy_Awards
+  sag: https://en.wikipedia.org/wiki/29th_Screen_Actors_Guild_Awards
+  dga: https://en.wikipedia.org/wiki/75th_Directors_Guild_of_America_Awards
+  pga: https://en.wikipedia.org/wiki/34th_Producers_Guild_of_America_Awards
+  cc: https://en.wikipedia.org/wiki/28th_Critics%27_Choice_Awards
+  bafta: https://en.wikipedia.org/wiki/76th_British_Academy_Film_Awards
+  gg: https://en.wikipedia.org/wiki/80th_Golden_Globe_Awards
+
+maps:
+  gg:
+    Best Drama: 0, 0
+    Best Comedy: 0, 1
+    Director: 14, 0
+    Drama Actor: 5, 0
+    Drama Actress: 5, 1
+    Comedy Actor: 8,0
+    Comedy Actress: 8,1
+    Supporting Actor: 11,0
+    Supporting Actress: 11, 1
+  sag:
+    Picture: 2,1
+    Actor: 0,0
+    Actress: 0,1
+    Supporting Actor: 1,0
+    Supporting Actress: 1, 1
+  oscar:
+    total_noms: 3
