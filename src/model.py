@@ -3,7 +3,7 @@ import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegressionCV
 from sklearn.metrics import recall_score, roc_auc_score
-
+from sklearn.model_selection import TimeSeriesSplit
 
 class OscarPredictor:
     def __init__(
@@ -79,6 +79,8 @@ class OscarPredictor:
         self.df_res_new = df_res
 
     def train_model_cv(self, model=None):
+        print(f"Training model for {self.model_category}")
+
         if model is None:
             model = self.define_model()
 
@@ -164,3 +166,26 @@ class OscarPredictor:
         )
 
         return metrics
+    
+def process_results_df(df_pred, probs):
+    df_res = df_pred.copy()
+
+    df_res["Prob"] = probs
+
+    # Classify the film with the highest probability of winning as the winner
+    df_res["Classification"] = 0
+    win_idx = df_res.groupby(["Category", "Year"])["Prob"].idxmax()
+    df_res.loc[win_idx, "Classification"] = 1
+
+    out_columns = [
+        "Category",
+        "Film",
+        "Nominee",
+        "Year",
+        "Winner",
+        "Prob",
+        "Classification",
+    ]
+    df_res = df_res[out_columns]
+
+    return df_res.to_dict(orient="records")

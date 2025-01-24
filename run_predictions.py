@@ -1,6 +1,8 @@
 import argparse
 
+import numpy as np
 import pandas as pd
+import requests
 
 from src.model import OscarPredictor
 from src.utils import load_config
@@ -8,6 +10,10 @@ from src.visualizations import create_barcharts
 
 config = load_config("configs/config.yml")
 
+def process_json_output(response_json):
+    res_df = pd.DataFrame(response_json)
+    res_df["Winner"] = np.nan
+    return res_df
 
 def main():
     parser = argparse.ArgumentParser("run_predictions")
@@ -17,26 +23,47 @@ def main():
         nargs="?",
         type=str,
         help="Which kind of model to use",
-        default="logit",
+        default="rf",
     )
     args = parser.parse_args()
 
     all_res = []
-    for model_category in config["category_map"].keys():
-        # TODO call trained model instead of training here
+    for model_category in ["Picture"]: #config["category_map"].keys():
         predictor = OscarPredictor(
             model_category=model_category,
             model_type=args.model_type,
             new_season=args.year,
             config=config,
         )
-        predictor.train_model()
+
+        # Load prediction data
+        df_new = predictor.load_new_data()
+        out_columns = [
+            "Category",
+            "Film",
+            "Nominee",
+            "Year",
+            "Winner"
+        ]
+        input_data = df_new[predictor.predictors+out_columns]
+
+        # Prepare payload
+        payload = {
+            "data": input_data.to_dict(orient="records"),
+            "vars": predictor.predictors
+        }       
 
         # Call model
-        predictor.predict_new_season()
+        # Send the POST request
+        response = requests.post(
+            "http://127.0.0.1:3000/predict_picture",
+            json=payload
+        )
+
+        print(response.json())
 
         # Save results
-        category_res = predictor.df_res_new
+        category_res = process_json_output(response.json())
         all_res.append(category_res)
 
     prediction_df = pd.concat(all_res)
