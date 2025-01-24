@@ -21,3 +21,9 @@ predictor_set: model_1
 
 model_prefix: model
 default_model_type: rf #rf or logit
+
+port_map:
+  Picture: 3000
+  Director: 3001
+  Lead Acting: 3002
+  Supporting Acting: 3003

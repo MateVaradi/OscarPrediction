@@ -22,7 +22,7 @@ class MyModelRunner(bentoml.Runnable):
 
 
 # Load the saved model
-cat = "Picture"
+cat = "Director"
 cat_tag = cat.lower().replace(" ","")
 model_type = config["default_model_type"]
 model_name = f'{config["model_prefix"]}-{model_type}-{cat_tag}'
@@ -34,7 +34,7 @@ svc = Service("batch_inference_service", runners=[model_runner])
 
 # Define an API for batch prediction
 @svc.api(input=JSON(), output=JSON())
-def predict_picture(request: dict):
+def predict_director(request: dict):
     try:
         # Extract input data and additional argument from the request
         input_data = pd.DataFrame(request["data"])

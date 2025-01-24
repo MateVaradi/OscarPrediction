@@ -28,7 +28,9 @@ def main():
     args = parser.parse_args()
 
     all_res = []
-    for model_category in ["Picture"]: #config["category_map"].keys():
+    for model_category in config["category_map"].keys():
+        cat = model_category.lower().replace(" ","_")
+
         predictor = OscarPredictor(
             model_category=model_category,
             model_type=args.model_type,
@@ -55,8 +57,9 @@ def main():
 
         # Call model
         # Send the POST request
+        port = config["port_map"][model_category]
         response = requests.post(
-            "http://127.0.0.1:3000/predict_picture",
+            f"http://127.0.0.1:{port}/predict_{cat}",
             json=payload
         )
 
