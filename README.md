@@ -27,9 +27,8 @@ The variables used for prediction can be grouped into distinct categories:
 ### Prerequisites
 
 - Standard data science packages (`numpy`, `pandas`, `sklearn`, etc)
-- Web scraping packages (`bs4`, `requests`)
-- [imdb](https://imdbpy.github.io/)
-- [rotten_tomatoes_scraper](https://pypi.org/project/rotten-tomatoes-scraper/)
+- Web scraping packages (`bs4`, `requests`, `selenium`, `webdriver`)
+- [https://imdbpy.github.io/](https://pypi.org/project/imdbmovies/)
 
 ### Files in the directory
 
