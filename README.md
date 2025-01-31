@@ -33,18 +33,22 @@ The variables used for prediction can be grouped into distinct categories:
 
 ### Files in the directory
 
-- data: Contains the data used for the project
-- `scrape_new_season_data.py` Scrapes IMDB and Rotten Tomatoes to get data for the nominees of a new season
-- `predictor_selection.csv` Is a reference table which can be used to select the variables to include in the models.
-- `get_predictions.py` Runs the machine learning models used to predict Oscar winners
-- `merge_new_season_data.py` Merges the _old_ dataset with the newly scraped data.
-- `model_development.py` Contains some of the functionality used to improve models, test different variable sets, etc.
+- `data/`: Contains the data used for the project
+- `config/`: Contains configurations files, such as
+  - `predictor_selection.csv` Is a reference table which can be used to select the variables to include in the models.
+
 
 ### How to use
 
-1. Run `scrape_new_season_data.py` to get data for the latest Oscar season - run this a few days before the Oscar ceremony that you want to predict. Check and manually fill in any NaNs before running predictions.
-2. Run `get_predictions.py`
-3. Run `merge_new_season_data.py` to update your database with the actual winners after the Oscar ceremony.
+#### 1. Data scraping
+1.1 Prepare the list of nominees for the given year. Use the existing `nominations_<year>.xlsx` files as a sample.
+1.2 Prepare the scape config file - use `scrape_config_<year>.yml` as a sample, and add the relevant Wikipedia links of the year. If the layout of the Wikipedia tables changed since last year you might need to adjust the `maps` key of the yaml.
+1.3 Run `python scrape_data.py --year <year>` to get data for the relevant Oscar season for <year> - run this a few days before the Oscar ceremony that you want to predict.
+1.4 The resulting datasets will be called `oscardata_<year>_<category>-auto.csv`. Double check the dataset created and manually fill in any NaNs before running predictions. Once ready, you can save the changes to `oscardata_<year>_<category>.csv`.
+
+#### 2. Predictions
+2.1 Run `get_predictions.py`
+2.2 Run `merge_new_season_data.py` to update your database with the actual winners after the Oscar ceremony.
 
 '+ you can play around with  `model_development.py` if you want to improve the models, try different hyperparameters, predictor sets, etc. Examples are provided in the file
 
