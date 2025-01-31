@@ -29,6 +29,7 @@ The variables used for prediction can be grouped into distinct categories:
 - Standard data science packages (`numpy`, `pandas`, `sklearn`, etc)
 - Web scraping packages (`bs4`, `requests`, `selenium`, `webdriver`)
 - [https://imdbpy.github.io/](https://pypi.org/project/imdbmovies/)
+- [BentoML](https://github.com/bentoml/BentoML)
 
 ### Files in the directory
 
@@ -49,9 +50,23 @@ The variables used for prediction can be grouped into distinct categories:
 1.4 The resulting datasets will be called `oscardata_<year>_<category>-auto.csv`. Double check the dataset created and manually fill in any NaNs before running predictions. Once ready, you can save the changes to `oscardata_<year>_<category>.csv`.
 
 #### 2. Predictions
-2.1 Run `get_predictions.py`
+
+2.1 Simply run `python get_predictions.py --year <year>`. This will call the latest deployed models for each category (see the next section, **Model maintenance / deployment** for details).
 
 #### 3. Model maintenance / deployment
+
+Models can be trained by running `train.py`. This will retrain a logistic regression and a random forest model by default for each category. The models will be saved to BentoML.
+
+To deploy the latest trained model, a separate script must be run for each of the 4 model categories, eg.:
+`bentoml serve deploy_supporting_acting.py --port 3003 &` will deploy the model used to predict the Supporting Acting categories. 
+
+Each model should be deployed to a different port. The recommended port allocations can be found in `config/configs.yml`.
+
+When a port is already in use, you can run
+
+`lsof -i :<port>` to check the used process IDs (PID)
+
+`kill <PID>`to kill the process
 
 '+ you can play around with  `notebooks/model_development.ipynb` if you want to improve the models, try different hyperparameters, predictor sets, etc. Examples are provided in the notebook
 
