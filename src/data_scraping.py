@@ -1,12 +1,16 @@
 # Imports
+import json
 import re
-from datetime import datetime
+import time
 
 import numpy as np
 import pandas as pd
 import requests
-import rottentomatoes as rt
 from imdbmovies import IMDB
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from webdriver_manager.chrome import ChromeDriverManager
 
 
 def quarter(date):
@@ -26,21 +30,62 @@ def quarter(date):
     return q
 
 
-def get_rt_score(score_func, movie_title, score_type):
-    try:
-        return int(score_func(movie_title))
-    except:
-        print(f"RT {score_type} score not found for: {movie_title}")
-        return np.nan
-
-
 def get_rt_ratings(movie_title):
     """
     Returns the Rotten Tomatoes critic score and audience score of a title
+    by scraping the RT website
     """
-    rt_critics_score = get_rt_score(rt.tomatometer, movie_title, "critic")
-    rt_audience_score = get_rt_score(rt.audience_score, movie_title, "audience")
-    return rt_critics_score, rt_audience_score
+    # Set up Selenium WebDriver
+    options = webdriver.ChromeOptions()
+    options.add_argument("--headless")  # Run in headless mode
+    driver = webdriver.Chrome(
+        service=Service(ChromeDriverManager().install()), options=options
+    )
+
+    try:
+        # Search for the movie on Rotten Tomatoes
+        search_url = f"https://www.rottentomatoes.com/search?search={movie_title.replace(' ', '%20')}"
+        driver.get(search_url)
+        time.sleep(3)  # Allow page to load
+
+        # Find the first movie result link
+        try:
+            first_result = driver.find_element(
+                By.CSS_SELECTOR, "search-page-media-row a[data-qa='info-name']"
+            )
+            movie_url = first_result.get_attribute("href")
+        except:
+            print("Movie not found.")
+            return None
+
+        driver.get(movie_url)
+        time.sleep(3)  # Wait for the page to load
+
+        # Find the script tag containing the reviews data
+        try:
+            script_tag = driver.find_element(
+                By.CSS_SELECTOR, 'script[data-json="reviewsData"]'
+            )
+            json_data = script_tag.get_attribute("innerHTML")
+            parsed_data = json.loads(json_data)
+
+            # Extract critic and audience scores
+            critic_score = parsed_data["criticsScore"]["scorePercent"]
+            audience_score = parsed_data["audienceScore"]["scorePercent"]
+
+            # Process into int
+            critic_score = int(critic_score.replace("%", ""))
+            audience_score = int(audience_score.replace("%", ""))
+
+        except:
+            print("Failed to extract scores.")
+            critic_score, audience_score = "N/A", "N/A"
+
+        return critic_score, audience_score
+
+    finally:
+        driver.quit()
+
 
 
 def get_person_birthyear(person_name):
@@ -223,7 +268,15 @@ def extract_nominees(table, award, find_winner=True, category_location_map=None)
                     if find_winner and noms[oscar_category]:
                         wins[oscar_category] = noms[oscar_category][0]
 
-    elif award.lower() in ["pga", "dga"]:
+    elif award.lower() == "pga":
+        category = "Picture"
+        cat_nom_list = table[2].iloc[0, 0].split("|")
+        noms[category] = [
+            clean_nominee(nom, get_title=False) for nom in cat_nom_list if nom
+        ]
+        wins[category] = noms[category][0]
+
+    elif award.lower() == "dga":
         category = "Picture"
         cat_nom_list = table[2].iloc[0, 0].split("|")
         noms[category] = [
@@ -395,7 +448,7 @@ def create_newseason_picture_dataframe(noms_picture, movie_info_dict, awards_inf
     df_picture["Nom_DGA"] = df_picture["Film"].apply(
         lambda x: x in awards_info_dict["dga"]["noms"]["Picture"]
     )
-    df_picture["Win_PGA"] = (
+    df_picture["Win_DGA"] = (
         df_picture["Film"] == awards_info_dict["dga"]["wins"]["Picture"]
     )
 
