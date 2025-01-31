@@ -51,9 +51,16 @@ The variables used for prediction can be grouped into distinct categories:
 
 #### 2. Predictions
 
-2.1 Simply run `python get_predictions.py --year <year>`. This will call the latest deployed models for each category (see the next section, **Model maintenance / deployment** for details).
+2.1 Simply run `python get_predictions.py --year <year>`. This will call the latest deployed models for each category (see the section, **Model maintenance & deployment** for details).
 
-#### 3. Model maintenance / deployment
+
+#### 3. Dataset maintenance
+
+3.1 After the winners have been announced, add a *Winner* column in `oscardata_<year>_<category>.csv` for each category, marking the winners with a 1. 
+
+3.2 Run `python merge_new_season_data.py --year <year>` to update the main datasets in `data/` with the results from the current year.
+
+#### 4. Model maintenance & deployment
 
 Models can be trained by running `train.py`. This will retrain a logistic regression and a random forest model by default for each category. The models will be saved to BentoML.
 
@@ -68,13 +75,9 @@ When a port is already in use, you can run
 
 `kill <PID>`to kill the process
 
-'+ you can play around with  `notebooks/model_development.ipynb` if you want to improve the models, try different hyperparameters, predictor sets, etc. Examples are provided in the notebook
+#### 5. Model development
 
-#### 4. Dataset maintenance
-
-4.1 After the winners have been announced, add a *Winner* column in `oscardata_<year>_<category>.csv` for each category, marking the winners with a 1. 
-
-4.2 Run `python merge_new_season_data.py --year <year>` to update the main datasets in `data/` with the results from the current year.
+You can play around with  `notebooks/model_development.ipynb` if you want to improve the models, try different hyperparameters, predictor sets, etc. Examples are provided in the notebook
 
 ## References
 
