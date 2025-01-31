@@ -5,6 +5,7 @@ from sklearn.linear_model import LogisticRegressionCV
 from sklearn.metrics import recall_score, roc_auc_score
 from sklearn.model_selection import TimeSeriesSplit
 
+
 class OscarPredictor:
     def __init__(
         self,
@@ -166,7 +167,8 @@ class OscarPredictor:
         )
 
         return metrics
-    
+
+
 def process_results_df(df_pred, probs):
     df_res = df_pred.copy()
 
