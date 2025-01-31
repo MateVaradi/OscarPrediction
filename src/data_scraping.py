@@ -448,7 +448,7 @@ def create_newseason_picture_dataframe(noms_picture, movie_info_dict, awards_inf
     df_picture["Nom_DGA"] = df_picture["Film"].apply(
         lambda x: x in awards_info_dict["dga"]["noms"]["Picture"]
     )
-    df_picture["Win_PGA"] = (
+    df_picture["Win_DGA"] = (
         df_picture["Film"] == awards_info_dict["dga"]["wins"]["Picture"]
     )
 
