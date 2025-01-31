@@ -51,9 +51,16 @@ The variables used for prediction can be grouped into distinct categories:
 
 #### 2. Predictions
 2.1 Run `get_predictions.py`
-2.2 Run `merge_new_season_data.py` to update your database with the actual winners after the Oscar ceremony.
 
-'+ you can play around with  `model_development.py` if you want to improve the models, try different hyperparameters, predictor sets, etc. Examples are provided in the file
+#### 3. Model maintenance / deployment
+
+'+ you can play around with  `notebooks/model_development.ipynb` if you want to improve the models, try different hyperparameters, predictor sets, etc. Examples are provided in the notebook
+
+#### 4. Dataset maintenance
+
+4.1 After the winners have been announced, add a *Winner* column in `oscardata_<year>_<category>.csv` for each category, marking the winners with a 1. 
+
+4.2 Run `python merge_new_season_data.py --year <year>` to update the main datasets in `data/` with the results from the current year.
 
 ## References
 
