@@ -42,8 +42,11 @@ The variables used for prediction can be grouped into distinct categories:
 
 #### 1. Data scraping
 1.1 Prepare the list of nominees for the given year. Use the existing `nominations_<year>.xlsx` files as a sample.
+
 1.2 Prepare the scape config file - use `scrape_config_<year>.yml` as a sample, and add the relevant Wikipedia links of the year. If the layout of the Wikipedia tables changed since last year you might need to adjust the `maps` key of the yaml.
+
 1.3 Run `python scrape_data.py --year <year>` to get data for the relevant Oscar season for <year> - run this a few days before the Oscar ceremony that you want to predict.
+
 1.4 The resulting datasets will be called `oscardata_<year>_<category>-auto.csv`. Double check the dataset created and manually fill in any NaNs before running predictions. Once ready, you can save the changes to `oscardata_<year>_<category>.csv`.
 
 #### 2. Predictions
