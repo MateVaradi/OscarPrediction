@@ -51,7 +51,7 @@ The variables used for prediction can be grouped into distinct categories:
 
 #### 2. Predictions
 
-2.1 Simply run `python get_predictions.py --year <year>`. This will call the latest deployed models for each category (see the section, **Model maintenance & deployment** for details).
+2.1 Simply run `python run_predictions.py --year <year>`. This will call the latest deployed models for each category (see the section, **Model maintenance & deployment** for details).
 
 
 #### 3. Dataset maintenance
