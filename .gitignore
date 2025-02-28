@@ -162,3 +162,5 @@ results/*
 .DS_Store
 .DS_Store
 .DS_Store
+notes.md
+.gitignore
