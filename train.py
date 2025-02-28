@@ -1,8 +1,7 @@
 
 import bentoml
 from datetime import datetime
-import pandas as pd
-
+import pickle
 
 from src.model import OscarPredictor
 from src.utils import load_config
@@ -22,6 +21,10 @@ def main():
             cat_tag = cat.lower().replace(" ","")
             model_name = f'{config["model_prefix"]}-{model_type}-{cat_tag}'
             bentoml.sklearn.save_model(model_name, predictor.model)
+            # Save locally as well
+            with open(f"models/{model_name}.pkl", "wb") as f:
+                pickle.dump(predictor, f)
+
             print(f"Model saved: {model_name}\n")
 
     
