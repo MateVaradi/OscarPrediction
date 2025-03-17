@@ -1,11 +1,11 @@
 Category,Film,Nominee,Year,Winner,Rating_IMDB,Release_date,MPAA_rating,Rating_rtcritic,Rating_rtaudience,Genre_biography,Genre_crime,Genre_comedy,Genre_drama,Genre_horror,Genre_fantasy,Genre_sci-fi,Genre_mystery,Genre_music,Genre_romance,Genre_history,Genre_war,Genre_filmnoir,Genre_thriller,Genre_adventure,Genre_family,Genre_sport,Genre_western,Genre_action,MPAA_G,MPAA_PG,MPAA_PG-13,MPAA_R,MPAA_NC-17,Release_Q1,Release_Q2,Release_Q3,Release_Q4,Oscarstat_totalnoms,Nom_Oscar_bestdirector,Nom_PGA,Nonom_PGA,Win_PGA,Nowin_PGA,Nom_DGA,Win_DGA,Nom_Criticschoice,Nonom_Criticschoice,Win_Criticschoice,Nowin_Criticschoice,Nom_SAG_bestcast,Nonom_SAG_bestcast,Win_SAG_bestcast,Nowin_SAG_bestcast,Nom_GoldenGlobe_bestdrama,Nom_GoldenGlobe_bestcomedy,Win_GoldenGlobe_bestdrama,Win_GoldenGlobe_bestcomedy,Nom_BAFTA,Win_BAFTA
-Picture,Anora,Anora,2025,,7.8,2024-11-08,R,93,90,0,0,1,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,6,1,1,0,1,0,1,1,1,0,1,0,1,0,0,1,0,1,0,0,1,0
-Picture,The Brutalist,The Brutalist,2025,,8,2025-01-24,R,93,81,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,10,1,1,0,0,1,1,0,1,0,0,1,0,1,0,1,1,0,1,0,1,0
-Picture,A Complete Unknown,A Complete Unknown,2025,,7.7,2024-12-25,R,80,96,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,8,1,1,0,0,1,1,0,1,0,0,1,1,0,0,1,1,0,0,0,1,0
-Picture,Conclave,Conclave,2025,,7.4,2024-10-25,PG,93,86,0,0,0,1,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,1,8,0,1,0,0,1,1,0,1,0,0,1,1,0,1,0,1,0,0,0,1,1
-Picture,Dune: Part Two,Dune: Part Two,2025,,8.5,2024-03-01,PG-13,92,95,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,1,0,0,1,0,0,0,5,0,1,0,0,1,0,0,1,0,0,1,0,1,0,1,1,0,0,0,0,0
-Picture,Emilia Pérez,Emilia Pérez,2025,,5.9,2024-11-13,R,74,19,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,13,1,1,0,0,1,1,0,1,0,0,1,1,0,0,1,0,1,0,1,1,0
-Picture,I'm Still Here,I'm Still Here,2025,,8.8,2025-02-07,PG-13,99,95,1,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,0,3,0,0,1,0,1,0,0,0,1,0,1,0,1,0,1,0,0,0,0,0,0
-Picture,Nickel Boys,Nickel Boys,2025,,7.6,2025-01-03,PG-13,90,76,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,0,2,0,0,1,0,1,0,0,1,0,0,1,0,1,0,1,1,0,0,0,0,0
-Picture,The Substance,The Substance,2025,,7.3,2024-09-20,R,89,75,0,0,0,1,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,5,1,1,0,0,1,0,0,1,0,0,1,0,1,0,1,0,1,0,0,0,0
-Picture,Wicked,Wicked,2025,,7.7,2024-11-22,PG,96,81,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,10,0,1,0,0,1,0,0,1,0,0,1,1,0,0,1,0,1,0,0,0,0
+Picture,Anora,Anora,2025,1,7.8,2024-11-08,R,93,90,0,0,1,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,6,1,1,0,1,0,1,1,1,0,1,0,1,0,0,1,0,1,0,0,1,0
+Picture,The Brutalist,The Brutalist,2025,0,8,2025-01-24,R,93,81,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,10,1,1,0,0,1,1,0,1,0,0,1,0,1,0,1,1,0,1,0,1,0
+Picture,A Complete Unknown,A Complete Unknown,2025,0,7.7,2024-12-25,R,80,96,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,8,1,1,0,0,1,1,0,1,0,0,1,1,0,0,1,1,0,0,0,1,0
+Picture,Conclave,Conclave,2025,0,7.4,2024-10-25,PG,93,86,0,0,0,1,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,1,8,0,1,0,0,1,1,0,1,0,0,1,1,0,1,0,1,0,0,0,1,1
+Picture,Dune: Part Two,Dune: Part Two,2025,0,8.5,2024-03-01,PG-13,92,95,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,1,0,0,1,0,0,0,5,0,1,0,0,1,0,0,1,0,0,1,0,1,0,1,1,0,0,0,0,0
+Picture,Emilia Pérez,Emilia Pérez,2025,0,5.9,2024-11-13,R,74,19,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,13,1,1,0,0,1,1,0,1,0,0,1,1,0,0,1,0,1,0,1,1,0
+Picture,I'm Still Here,I'm Still Here,2025,0,8.8,2025-02-07,PG-13,99,95,1,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,0,3,0,0,1,0,1,0,0,0,1,0,1,0,1,0,1,0,0,0,0,0,0
+Picture,Nickel Boys,Nickel Boys,2025,0,7.6,2025-01-03,PG-13,90,76,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,0,2,0,0,1,0,1,0,0,1,0,0,1,0,1,0,1,1,0,0,0,0,0
+Picture,The Substance,The Substance,2025,0,7.3,2024-09-20,R,89,75,0,0,0,1,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,5,1,1,0,0,1,0,0,1,0,0,1,0,1,0,1,0,1,0,0,0,0
+Picture,Wicked,Wicked,2025,0,7.7,2024-11-22,PG,96,81,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,10,0,1,0,0,1,0,0,1,0,0,1,1,0,0,1,0,1,0,0,0,0
